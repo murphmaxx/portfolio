@@ -1,23 +1,20 @@
-# Color direction — cobalt field
+# British racing green + bronze alloy + Nardo grey
 
-The user rejected the carbon/steel/bronze palette and requested a completely new color scheme. The visual language remains direct, expensive, and defense-industrial; color shifts toward deep aerospace blue, white, and a controlled amber signal.
+The user requested a darker, automotive-industrial palette. The visual system stays expensive, straightforward, and defense-industrial while replacing aerospace blue and amber.
 
 ## Palette
 
-- `--navy`: `#07111F` — primary field
-- `--blue`: `#0D2138` — elevated field
-- `--blue-2`: `#163A5C` — secondary field
-- `--white`: `#F1F3F2` — primary text
-- `--mist`: `#B7C3CA` — secondary text
-- `--line`: `#617687` — structural linework
-- `--amber`: `#D39A52` — selected action and verification signal
-- `--amber-dark`: `#8F683A` — light-surface accent
-- `--error`: `#B65B53` — reserved semantic error
+- `--racing`: `#07130F` — British racing green primary field
+- `--green`: `#0D2118` — elevated field
+- `--green-2`: `#153326` — secondary field
+- `--nardo`: `#B7B9B4` — Nardo grey technical surface and labels
+- `--white`: `#E8EBE6` — primary foreground
+- `--muted`: `#A5AEA8` — secondary text
+- `--line`: `#50665A` — structural linework
+- `--bronze`: `#A8794D` — bronze alloy action and verification signal
+- `--bronze-dark`: `#725333` — bronze on light surfaces
+- `--error`: `#A9574D` — reserved semantic error
 
-## Rationale
+## Usage
 
-Deep aerospace blue provides seriousness and depth without the generic black/neon security aesthetic. White keeps the page procurement-readable. Amber is used like an instrument status lamp: rare, deliberate, and tied to action or verification. No gradients, glows, fluorescent accents, or decorative color fields.
-
-## Scope
-
-The hero label “AI security and safety engineering” is removed. The hero headline is now a structural placeholder for the user's replacement tagline and is not being treated as final copy.
+British racing green owns the page. Nardo grey appears as the neutral technical surface and controlled document field. Bronze alloy is rare: actions, measured points, and verification signals only. No neon, purple, cyan, gradients, glows, or playful color fields.
