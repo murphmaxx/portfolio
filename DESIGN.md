@@ -1,51 +1,43 @@
-# Technical portfolio — design system revision
+# Technical portfolio — visual system
 
 <!-- impeccable:design-schema 1 -->
 
 ## World
 
-An expensive, direct defense-industrial technical dossier with an automotive-industrial material palette. The portfolio communicates engineering seriousness through restraint, precision, documentary media, and explicit system boundaries. British racing green owns the page; bronze alloy marks action and verification; Nardo grey supplies the technical neutral.
+An expensive defense-industrial field interface with a continuous spatial substrate. British racing green is the environment. Bronze alloy is the measured signal. Nardo grey is the quiet closing plane. Project information travels through the field as technical records.
 
 ## Palette
 
-- `--racing`: `#07130F` — British racing green primary field
-- `--green`: `#0D2118` — elevated field
-- `--green-2`: `#153326` — secondary field
-- `--nardo`: `#B7B9B4` — technical surface and neutral document field
-- `--white`: `#E8EBE6` — primary text
+- `--racing`: `#07130F` — persistent background field
+- `--green`: `#0D2118` — project information boxes
+- `--green-2`: `#153326` — elevated project field
+- `--nardo`: `#B7B9B4` — closing/document surface
+- `--white`: `#E8EBE6` — foreground
 - `--muted`: `#A5AEA8` — secondary text
-- `--line`: `#50665A` — structural linework
+- `--line`: `#50665A` — structure
 - `--bronze`: `#A8794D` — action and verification signal
-- `--bronze-dark`: `#725333` — light-surface accent
-- `--error`: `#A9574D` — reserved semantic error
-
-## Typography
-
-- Barlow Condensed — restrained technical display, weights 500–700
-- Archivo — body and interface text
-- DM Mono — system labels, state, identifiers, and evidence metadata
+- `--bronze-dark`: `#725333` — dark bronze on Nardo
 
 ## Composition
 
-- Restrained masthead on a strict grid.
-- Two-part opening: a direct tagline area and a large technical system field.
-- Capabilities use a procurement-readable matrix.
-- Projects use full-width technical records rather than floating cards.
-- Writing is treated as a formal document artifact.
-- Contact is one direct close.
+The hero is intentionally tall rather than a self-contained section. Its field remains fixed while the document scrolls. The first project box appears after the opening and travels through the same field. Project boxes alternate modest x/y offsets and rotations to create depth while preserving a stable reading order.
 
 ## Controls
 
-Rectangular bordered actions with a separate arrow cell. No pill buttons. Hover inverts the action field and moves the arrow two pixels. Minimum 44px targets and visible focus outlines.
+Rectangular actions with separate arrow cells. No pills. Hover/focus changes the field and shifts the arrow a small distance. The control language is closer to an instrument panel than a marketing button.
 
 ## Motion grammar
 
-Scroll changes only explanatory diagrams: the hero ring expands by at most 7%; project evidence traces resolve as records enter. No looping background animation, cursor follower, magnetic behavior, bounce, or decorative glow.
+- Focal moment: the first project record crossing from the hero into the persistent field.
+- Continuity: one fixed background field across hero and project run.
+- Feedback: project media trace resolves on hover/focus.
+- Budget: one requestAnimationFrame scroll loop and CSS transforms only.
+- Reduced motion: freeze field and present records without spatial transforms.
 
 ## Responsive rules
 
-Hero moves from two columns to one at tablet width. Capability matrix becomes two columns, then one. Project records preserve number, title, media, and action order. Navigation removes lower-priority links only at narrow phone widths. Media and document frames retain their intended ratios.
+Desktop uses layered parallax planes and generous offsets. Tablet reduces offsets. Mobile collapses boxes into one column, removes rotation, retains the background field, and keeps every project action in normal document order.
 
 ## Content boundary
 
-The hero micro-label has been removed entirely. The approved hero tagline is “Controls for consequential AI.” Final claims, contact information, media, status, and metrics remain subject to evidence review.
+The approved tagline remains “Controls for consequential AI.” The previous label above the hero is removed entirely. Project descriptions and evidence labels remain clearly provisional until real source material is reviewed.
