@@ -1,9 +1,5 @@
-# Field background asset
+# Field background render — generated scene
 
-The required rendered background is not yet present. The page references:
+A procedural, high-resolution SVG render standing in for the requested physical background image until a raster render is supplied. It is intentionally a render rather than a UI diagram: material planes, machined alloy rings, shadow fields, and depth layers create a full-bleed industrial environment with no semantic text.
 
-```text
-motion/field-background.webp
-```
-
-Generate it from `FIELD-BACKGROUND-PROMPT.md` or provide an approved source render. Do not substitute a stock image or claim that the asset has been produced.
+The SVG is authored locally and is safe to replace with a photoreal render at the same path without changing page structure.
