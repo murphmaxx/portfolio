@@ -1,14 +1,28 @@
-# Parallax correction
+# Parallax correction — final interaction contract
 
-The previous implementation exposed a source-level parallax variable but did not reliably apply visible motion because the panel transform declaration was duplicated during iterative edits and the scroll loop was duplicated in the inline script.
+The card effect is intentionally a whole-card pointer tilt, matching the Keel reference's middle-pane interaction rather than using scroll translation as a substitute.
 
-This correction makes the interaction explicit:
+## Rest state
 
-- each `.project-box` receives a measurable `--scroll-shift` value;
-- the value is applied in the panel transform;
-- the panel transform is the only transform owner for its depth movement;
-- the fixed background remains independently translated;
-- mobile removes the lateral depth offsets for a stable reading path;
-- the source script declares `boxes` once before `setMotion()` is called.
+- Every project card is flat at `0deg`.
+- Cards do not have built-in rotation.
+- Cards do not use a sticky stack.
 
-The effect should be judged visually with the preview open, not from the stylesheet alone.
+## Pointer state
+
+- Pointer movement over the card calculates normalized local coordinates.
+- The full `.project-box` receives `rotateX()` and `rotateY()`.
+- Maximum target is approximately 8–10 degrees.
+- The card transitions with transform easing.
+- Pointer leave returns both axes to zero.
+
+## Scroll state
+
+- Scroll changes only `--scroll-shift` translation.
+- Pointer tilt and scroll shift are composed in one transform declaration.
+- The card remains the moving plane, not only the media child.
+
+## Background
+
+- The previous vector/image background layers are removed from the page.
+- The page uses the field background while the new render is being produced.
