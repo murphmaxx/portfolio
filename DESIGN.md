@@ -47,4 +47,4 @@ Hero moves from two columns to one at tablet width. Capability matrix becomes tw
 
 ## Content boundary
 
-The hero micro-label formerly reading “AI security and safety engineering” has been removed. The main tagline remains a replaceable draft placeholder until the user supplies or approves its final wording. Final claims, contact information, media, status, and metrics remain subject to evidence review.
+The hero micro-label formerly reading “AI security and safety engineering” has been removed. The new hero tagline is “Controls for consequential AI.” Final claims, contact information, media, status, and metrics remain subject to evidence review.
