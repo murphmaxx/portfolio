@@ -4,61 +4,66 @@
 
 ## World
 
-A high-energy, evidence-led technical portfolio. The interface feels like a control surface for inspecting serious systems: dark stage, bright signal, trajectory lines, media frames, and strong typography. It borrows the pacing of premium athlete and creative portfolios without adopting their subject matter or copying their identity.
+A high-energy, evidence-led technical portfolio. The interface feels like an authored inspection instrument: midnight aubergine stage, acid chartreuse signals, parchment reading surfaces, coral editorial interruptions, contour paths, hard-edged media stages, and forceful condensed typography.
 
 ## Palette
 
-- `--ink`: `#080909` — primary stage
-- `--paper`: `#F4F5F0` — contrast field and readable surface
-- `--signal`: `#21E6C1` — only primary action and active-state signal
-- `--signal-dim`: transparent signal for restrained fields
-- `--muted`: `#9DA7A4` — secondary copy on dark
-- `--line`: low-opacity white — structural rules
+- `--canvas`: `#120D19` — midnight aubergine stage
+- `--surface`: `#1D1429` — primary elevated field
+- `--surface-2`: `#2B1C3B` — dense project field
+- `--paper`: `#F3EDDC` — warm readable surface and foreground
+- `--ink`: `#17101E` — text on bright fields
+- `--signal`: `#D7FF45` — acid chartreuse action, focus, and active state
+- `--signal-dark`: `#91AB24` — chartreuse support role
+- `--coral`: `#FF765F` — writing/editorial field
+- `--muted`: `#B9AFC5` — secondary text on dark surfaces
+- `--line`: translucent parchment — structural rules
 
 ## Typography
 
 - Barlow Condensed — display voice, oversized and compressed
-- Archivo — body and UI voice
+- Archivo — body and interface voice
 - DM Mono — telemetry, metadata, state, and evidence labels
 
 ## Composition
 
 - Full-screen first viewport.
-- Left-anchored statement, not centered résumé copy.
-- Fixed compact utility navigation.
-- High-contrast field changes between sections.
+- Left-anchored statement rather than centered résumé copy.
+- Compact fixed utility navigation.
+- Strong field changes between sections.
 - Project work presented as a pinned sequence rather than equal cards.
-- Detail media is structural and large; chrome remains sparse.
+- Media stages are structural and large; chrome remains sparse.
+
+## Button system
+
+Adapted from the 21st.dev Origin UI animated-arrow button anatomy:
+
+- pill-shaped text and circular arrow well
+- action fill travels across the capsule on hover/focus
+- arrow translates and rotates to acknowledge intent
+- shared `.button`, `.button--compact`, and `.button--ghost` variants
+- minimum 44px target
+- explicit focus ring
+- motion toggle uses the same component language
 
 ## Motion grammar
 
-- Orbit rotation is slow ambient orientation.
-- Sticky cards create scroll continuity.
-- Hover lift is optional enhancement, never required for access.
+- The focal motion is scroll-coupled inspection: contour paths rotate and translate as the visitor enters the work.
+- Project media frames uncover as they approach, while trace nodes move along a line.
+- Buttons provide bounded action feedback.
+- Only the scroll cue loops, and it stops for reduced motion or manual motion-off.
 - The cursor ring is desktop-only and decorative.
-- Motion has a manual off state and a reduced-motion state.
-- No motion may hide copy or block keyboard access.
-
-## Components
-
-- Wordmark + capsule navigation
-- Eyebrow signal label
-- Kinetic hero statement
-- Work-link pill
-- System relationship diagram
-- Sticky project frame
-- Media/system trace placeholder
-- Research artifact frame
-- Closing contact field
+- No content begins hidden; failed scripts preserve the full experience.
+- Motion has manual off and `prefers-reduced-motion` states.
 
 ## Responsive rules
 
-- Mobile turns split compositions into a single reading column.
-- Sticky cards use a compact top offset and remain fully readable.
+- Mobile turns split compositions into one reading column.
+- Sticky cards use a compact shared top offset and remain readable.
 - Cursor interaction disappears on coarse pointers.
-- Navigation collapses to essential links.
-- Large display type scales with viewport width.
+- Navigation retains essential work through the button while secondary text links collapse.
+- Display type scales fluidly.
 
 ## Current boundary
 
-This system describes the prototype. Final content, imagery, video, and route-level components must be added only after evidence review. The world should be updated from the production build after the first real media pass.
+This system describes the refined prototype. Final copy, imagery, video, and routes still require evidence review. Real media should replace abstract stages without changing this composition or interaction grammar.
