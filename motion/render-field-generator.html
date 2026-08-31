@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>field render generator</title>
+<style>html,body{margin:0;height:100%;background:#0a0c0e;overflow:hidden}canvas{display:block}</style>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// Deterministic value noise (seeded) so the render is reproducible.
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rand=mulberry32(1906);
+const P=new Array(512);for(let i=0;i<512;i++)P[i]=rand();
+function vnoise(x,y){
+  const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi;
+  const s=(a,b)=>P[(((a&255)*97+(b&255)*57)|0)&511];
+  const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+  return s(xi,yi)*(1-u)*(1-v)+s(xi+1,yi)*u*(1-v)+s(xi,yi+1)*(1-u)*v+s(xi+1,yi+1)*u*v;
+}
+function fbm(x,y){let a=0,amp=.5,f=1;for(let o=0;o<5;o++){a+=amp*vnoise(x*f,y*f);amp*=.5;f*=2.1}return a}
+
+const W=2560,H=1440;
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setSize(W,H,false);
+renderer.setPixelRatio(1);
+document.body.appendChild(renderer.domElement);
+renderer.domElement.style.width='100vw';renderer.domElement.style.height='100vh';
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x0a0c0e);
+scene.fog=new THREE.FogExp2(0x0a0c0e,0.0088);
+
+const camera=new THREE.PerspectiveCamera(38,W/H,0.1,600);
+camera.position.set(0,17,66);
+camera.lookAt(0,4,-40);
+
+// Terrain: displaced plane, faceted machined-graphite surface.
+const geo=new THREE.PlaneGeometry(340,220,300,190);
+geo.rotateX(-Math.PI/2);
+const pos=geo.attributes.position;
+for(let i=0;i<pos.count;i++){
+  const x=pos.getX(i),z=pos.getZ(i);
+  let h=fbm(x*0.016+3.7,z*0.016+9.2)*30-9;
+  // carve a quiet basin near the camera so hero text sits over calm ground
+  const d=Math.sqrt((x*0.9)**2+((z-55)*1.4)**2);
+  h*=Math.min(1,Math.max(.12,(d-18)/90));
+  // long diagonal ridge through the mid-field
+  h+=Math.max(0,6-Math.abs((x*0.55+z+30))*0.14)*1.4;
+  pos.setY(i,h);
+}
+geo.computeVertexNormals();
+
+const terrain=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({
+  color:0x1c232b,metalness:0.42,roughness:0.5,flatShading:true
+}));
+scene.add(terrain);
+
+// Faint steel wireframe floating just above the surface — survey overlay.
+const wire=new THREE.Mesh(geo.clone(),new THREE.MeshBasicMaterial({
+  color:0x46525c,wireframe:true,transparent:true,opacity:0.17
+}));
+wire.position.y=0.25;
+scene.add(wire);
+
+// Lights: warm signal rake from the left horizon, cool steel fill right, low ambient.
+scene.add(new THREE.HemisphereLight(0x39434e,0x07090c,1.0));
+const rake=new THREE.DirectionalLight(0xd58042,4.0);
+rake.position.set(-140,60,-80);
+scene.add(rake);
+const fill=new THREE.DirectionalLight(0x54626f,0.9);
+fill.position.set(90,40,20);
+scene.add(fill);
+const glow=new THREE.PointLight(0xd58042,1.6,200,1.8);
+glow.position.set(-60,26,-85);
+scene.add(glow);
+
+// Survey markers: sparse emissive posts on ridge crests.
+const markerMat=new THREE.MeshBasicMaterial({color:0xd98b4a});
+const posts=[[-52,-48],[-14,-72],[26,-38],[58,-70],[4,-16],[-78,-20]];
+for(const [mx,mz] of posts){
+  let h=fbm(mx*0.016+3.7,mz*0.016+9.2)*30-9;
+  h+=Math.max(0,6-Math.abs((mx*0.55+mz+30))*0.14)*1.4;
+  const post=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,7,6),markerMat);
+  post.position.set(mx,h+3.5,mz);
+  scene.add(post);
+  const tip=new THREE.Mesh(new THREE.SphereGeometry(0.5,10,10),markerMat);
+  tip.position.set(mx,h+7.4,mz);
+  scene.add(tip);
+}
+
+renderer.render(scene,camera);
+window.__renderDone=true;
+</script>
+</body>
+</html>
