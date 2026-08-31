@@ -1,36 +1,39 @@
-# Technical portfolio — interaction revision
+# British racing green field — interaction revision
 
-The homepage now follows the original experience brief rather than the previous dossier layout.
+The homepage now follows the original experience brief: a persistent animated full-page background with project information boxes moving through it at different parallax depths.
 
-## Core interaction
+## Visual roles
 
-- One persistent full-screen British racing green field remains behind the page.
-- The field contains restrained mesh, contour, and marker layers.
-- Scroll changes the field's depth, scale, rotation, and marker position.
-- Text sits in the foreground over the field.
-- Project records move through the field at different parallax offsets.
-- Project records are intentionally information boxes, not generic cards.
-- Each record has project identity, system boundary, evidence path, media field, and action.
-- The closing surface uses Nardo grey as a quieter foreground plane.
+- British racing green is the uninterrupted background environment.
+- Bronze alloy is the only active signal.
+- Nardo grey is the quiet closing plane.
+- White is reserved for readable foreground and high-priority values.
+
+## Composition
+
+- Full-screen hero text sits over the field.
+- The hero is taller than one viewport so the visitor begins scrolling through the same spatial environment.
+- Project records are positioned as deliberate information boxes, not equal cards.
+- Each project box has a depth offset, a media/evidence field, project metadata, and a direct action.
+- The closing section is a separate Nardo plane that gives the eye rest.
 
 ## Motion thesis
 
-The field is the spatial continuity of the portfolio. Project boxes are objects moving through that field. Scroll is therefore a meaningful inspection control rather than a trigger for unrelated reveal animations.
+The background is the portfolio's continuous system field. Scroll alters field depth and moves a marker through the coordinate space. Project boxes translate and rotate by small, intentional depth offsets. Media traces resolve on hover/focus. The motion expresses inspection and continuity rather than decoration.
 
-The implementation uses requestAnimationFrame-throttled scroll updates and CSS transforms. The field does not require WebGL or a runtime dependency yet. Reduced motion freezes the field and leaves all content in normal readable flow.
+## 21st.dev mechanics adapted
 
-## Visual identity
+- Immersive Scroll Gallery: persistent visual depth.
+- Interactive Video Portfolio Scroller: future synchronized project media and text.
+- Stacking Cards / Scroll Cards: depth ordering, adapted into free-standing records.
+- Origin UI animated-arrow Button: adapted into rectangular technical actions.
 
-- British racing green owns the background.
-- Bronze alloy marks active points, links, and evidence paths.
-- Nardo grey is reserved for the closing/document surface.
-- No cyan, purple, neon-lime, gradients, glows, pills, or playful controls.
+No catalog source is copied directly into the static prototype.
 
-## 21st.dev inspiration used as mechanics
+## Accessibility and fallback
 
-- Immersive Scroll Gallery: visual depth and scroll-linked scale.
-- Interactive Video Portfolio Scroller: text/media synchronization model for future real demos.
-- Stacking Cards / Scroll Cards: depth ordering and continuous project progression.
-- Origin UI animated-arrow button: adapted into rectangular technical actions rather than capsules.
-
-The source components are references, not copied production dependencies.
+- Core project content is visible without JavaScript.
+- Reduced motion removes spatial transforms and leaves the normal reading order.
+- Mobile removes rotation and collapses the records to a single column.
+- Project actions are ordinary links with visible focus.
+- The background is decorative and cannot block content.
