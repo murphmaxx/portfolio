@@ -1,24 +1,22 @@
-# Technical Portfolio — Design System
+# Technical portfolio — design system revision
 
 <!-- impeccable:design-schema 1 -->
 
 ## World
 
-An expensive, direct defense-industrial technical dossier. The portfolio communicates engineering seriousness through restraint, precision, documentary media, and explicit system boundaries. It avoids consumer-tech playfulness, decorative futurism, neon, glass, pill-heavy interfaces, and campaign effects that obscure technical evaluation.
+An expensive, direct defense-industrial technical dossier. The portfolio communicates engineering seriousness through restraint, precision, documentary media, and explicit system boundaries. The palette is deep aerospace blue, white, and controlled amber. The page is not playful, neon, pill-driven, or a consumer-tech campaign.
 
 ## Palette
 
-- `--carbon`: `#0C0F10` — primary background
-- `--steel`: `#151A1C` — technical field
-- `--steel-2`: `#1D2325` — raised section field
-- `--fog`: `#E7E9E5` — primary foreground
-- `--paper`: `#F3F3EF` — capability and document surface
-- `--ink`: `#151819` — dark ink on paper
-- `--muted`: `#9DA4A1` — secondary technical text
-- `--line`: `#41494A` — structural linework
-- `--bronze`: `#AA8963` — selected action and evidence signal
-- `--bronze-dark`: `#6E5941` — paper-surface accent
-- `--danger`: `#A65145` — reserved semantic warning
+- `--navy`: `#07111F` — primary field
+- `--blue`: `#0D2138` — technical field
+- `--blue-2`: `#163A5C` — elevated field
+- `--white`: `#F1F3F2` — primary text and light field
+- `--mist`: `#B7C3CA` — secondary text
+- `--line`: `#617687` — structural linework
+- `--amber`: `#D39A52` — action and verification signal
+- `--amber-dark`: `#8F683A` — light-surface accent
+- `--error`: `#B65B53` — reserved semantic error
 
 ## Typography
 
@@ -26,42 +24,27 @@ An expensive, direct defense-industrial technical dossier. The portfolio communi
 - Archivo — body and interface text
 - DM Mono — system labels, state, identifiers, and evidence metadata
 
-Display weights and sizes are reduced from the prior campaign-style direction. Body text stays at 15–16px with extended line height and controlled measure.
-
 ## Composition
 
-- Restrained 72px masthead on a strict grid.
-- Two-part opening: direct positioning statement and large technical system field.
+- Restrained masthead on a strict grid.
+- Two-part opening: a direct tagline area and a large technical system field.
 - Capabilities use a procurement-readable matrix.
-- Projects use full-width technical records rather than floating or sticky cards.
+- Projects use full-width technical records rather than floating cards.
 - Writing is treated as a formal document artifact.
 - Contact is one direct close.
 
 ## Controls
 
-- Rectangular bordered actions with separate arrow cells.
-- No capsule or pill buttons.
-- No traveling fills, bounce, magnetic behavior, or decorative cursor.
-- Hover inverts the action field; arrow moves two pixels to confirm direction.
-- Minimum 44px targets and explicit focus outlines.
+Rectangular bordered actions with a separate arrow cell. No pill buttons. Hover inverts the action field and moves the arrow two pixels. Minimum 44px targets and visible focus outlines.
 
 ## Motion grammar
 
-Motion is almost absent. Scroll changes only two explanatory diagrams:
-
-- the hero system ring expands by at most 7%;
-- project evidence traces resolve horizontally as records enter the viewport.
-
-All movement is transform-based, requestAnimationFrame-throttled, manually disableable, and removed for reduced-motion preference. No looping decorative animation remains.
+Scroll changes only explanatory diagrams: the hero ring expands by at most 7%; project evidence traces resolve as records enter. No looping background animation, cursor follower, magnetic behavior, bounce, or decorative glow.
 
 ## Responsive rules
 
-- Hero moves from two columns to one at tablet width.
-- Capability matrix becomes two columns, then one.
-- Project records preserve number, title, media, and action order.
-- Navigation removes lower-priority links only at narrow phone widths.
-- Media and document frames retain their intended ratios.
+Hero moves from two columns to one at tablet width. Capability matrix becomes two columns, then one. Project records preserve number, title, media, and action order. Navigation removes lower-priority links only at narrow phone widths. Media and document frames retain their intended ratios.
 
 ## Content boundary
 
-Final claims, capability language, contact information, media, status, and metrics remain subject to evidence review. The current wording is structural draft copy, not published representation.
+The hero micro-label formerly reading “AI security and safety engineering” has been removed. The main tagline remains a replaceable draft placeholder until the user supplies or approves its final wording. Final claims, contact information, media, status, and metrics remain subject to evidence review.
