@@ -1,69 +1,67 @@
-# Apex Homepage — Design System
+# Technical Portfolio — Design System
 
 <!-- impeccable:design-schema 1 -->
 
 ## World
 
-A high-energy, evidence-led technical portfolio. The interface feels like an authored inspection instrument: midnight aubergine stage, acid chartreuse signals, parchment reading surfaces, coral editorial interruptions, contour paths, hard-edged media stages, and forceful condensed typography.
+An expensive, direct defense-industrial technical dossier. The portfolio communicates engineering seriousness through restraint, precision, documentary media, and explicit system boundaries. It avoids consumer-tech playfulness, decorative futurism, neon, glass, pill-heavy interfaces, and campaign effects that obscure technical evaluation.
 
 ## Palette
 
-- `--canvas`: `#120D19` — midnight aubergine stage
-- `--surface`: `#1D1429` — primary elevated field
-- `--surface-2`: `#2B1C3B` — dense project field
-- `--paper`: `#F3EDDC` — warm readable surface and foreground
-- `--ink`: `#17101E` — text on bright fields
-- `--signal`: `#D7FF45` — acid chartreuse action, focus, and active state
-- `--signal-dark`: `#91AB24` — chartreuse support role
-- `--coral`: `#FF765F` — writing/editorial field
-- `--muted`: `#B9AFC5` — secondary text on dark surfaces
-- `--line`: translucent parchment — structural rules
+- `--carbon`: `#0C0F10` — primary background
+- `--steel`: `#151A1C` — technical field
+- `--steel-2`: `#1D2325` — raised section field
+- `--fog`: `#E7E9E5` — primary foreground
+- `--paper`: `#F3F3EF` — capability and document surface
+- `--ink`: `#151819` — dark ink on paper
+- `--muted`: `#9DA4A1` — secondary technical text
+- `--line`: `#41494A` — structural linework
+- `--bronze`: `#AA8963` — selected action and evidence signal
+- `--bronze-dark`: `#6E5941` — paper-surface accent
+- `--danger`: `#A65145` — reserved semantic warning
 
 ## Typography
 
-- Barlow Condensed — display voice, oversized and compressed
-- Archivo — body and interface voice
-- DM Mono — telemetry, metadata, state, and evidence labels
+- Barlow Condensed — restrained technical display, weights 500–700
+- Archivo — body and interface text
+- DM Mono — system labels, state, identifiers, and evidence metadata
+
+Display weights and sizes are reduced from the prior campaign-style direction. Body text stays at 15–16px with extended line height and controlled measure.
 
 ## Composition
 
-- Full-screen first viewport.
-- Left-anchored statement rather than centered résumé copy.
-- Compact fixed utility navigation.
-- Strong field changes between sections.
-- Project work presented as a pinned sequence rather than equal cards.
-- Media stages are structural and large; chrome remains sparse.
+- Restrained 72px masthead on a strict grid.
+- Two-part opening: direct positioning statement and large technical system field.
+- Capabilities use a procurement-readable matrix.
+- Projects use full-width technical records rather than floating or sticky cards.
+- Writing is treated as a formal document artifact.
+- Contact is one direct close.
 
-## Button system
+## Controls
 
-Adapted from the 21st.dev Origin UI animated-arrow button anatomy:
-
-- pill-shaped text and circular arrow well
-- action fill travels across the capsule on hover/focus
-- arrow translates and rotates to acknowledge intent
-- shared `.button`, `.button--compact`, and `.button--ghost` variants
-- minimum 44px target
-- explicit focus ring
-- motion toggle uses the same component language
+- Rectangular bordered actions with separate arrow cells.
+- No capsule or pill buttons.
+- No traveling fills, bounce, magnetic behavior, or decorative cursor.
+- Hover inverts the action field; arrow moves two pixels to confirm direction.
+- Minimum 44px targets and explicit focus outlines.
 
 ## Motion grammar
 
-- The focal motion is scroll-coupled inspection: contour paths rotate and translate as the visitor enters the work.
-- Project media frames uncover as they approach, while trace nodes move along a line.
-- Buttons provide bounded action feedback.
-- Only the scroll cue loops, and it stops for reduced motion or manual motion-off.
-- The cursor ring is desktop-only and decorative.
-- No content begins hidden; failed scripts preserve the full experience.
-- Motion has manual off and `prefers-reduced-motion` states.
+Motion is almost absent. Scroll changes only two explanatory diagrams:
+
+- the hero system ring expands by at most 7%;
+- project evidence traces resolve horizontally as records enter the viewport.
+
+All movement is transform-based, requestAnimationFrame-throttled, manually disableable, and removed for reduced-motion preference. No looping decorative animation remains.
 
 ## Responsive rules
 
-- Mobile turns split compositions into one reading column.
-- Sticky cards use a compact shared top offset and remain readable.
-- Cursor interaction disappears on coarse pointers.
-- Navigation retains essential work through the button while secondary text links collapse.
-- Display type scales fluidly.
+- Hero moves from two columns to one at tablet width.
+- Capability matrix becomes two columns, then one.
+- Project records preserve number, title, media, and action order.
+- Navigation removes lower-priority links only at narrow phone widths.
+- Media and document frames retain their intended ratios.
 
-## Current boundary
+## Content boundary
 
-This system describes the refined prototype. Final copy, imagery, video, and routes still require evidence review. Real media should replace abstract stages without changing this composition or interaction grammar.
+Final claims, capability language, contact information, media, status, and metrics remain subject to evidence review. The current wording is structural draft copy, not published representation.
