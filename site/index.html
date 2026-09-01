@@ -387,7 +387,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       </dl>
     </div>
     <div class="project-data">Boundary<b>Rust / complexity</b>Evidence<b>Public repository</b><a class="action" href="https://github.com/murphmaxx/crucible" target="_blank" rel="noopener"><span>Repository</span><span class="action-icon"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M9 5h10v10"/></svg></span></a></div>
-    <div class="media-field"><canvas class="demo" data-demo="crucible" aria-hidden="true"></canvas><span class="readout-tag">Surveyed 2026-08-31</span></div>
+    <div class="media-field"><canvas class="demo" data-demo="crucible" aria-hidden="true"></canvas><span class="readout-tag">Real run — replayed</span></div>
     </div>
   </div>
 
@@ -1161,6 +1161,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
 })();
 </script>
 
+<script>window.__transcripts = {"crucible":{"cmd":"crucible src","note":"crucible measuring its own source — captured 2026-09-01","lines":[["hd","crucible — simplicity report"],["dim","crucible measures structure, not defects — a percentile is not a bug risk."],["",""],["wht","85 functions measured."],["",""],["sig","## cognitive complexity (derived: branching x nesting; the human-facing headline)"],["dim","  distribution: min 0 · median 0 · p90 1 · p99 12 · max 20 · (mean 0.7)"],["hot","     20  p 99  walk_item  src/parse.rs:27:4"],["row","     11  p 98  main  src/main.rs:8:4"],["row","      5  p 96  pearson  src/rollup.rs:69:8"],["row","      3  p 95  record_fn  src/parse.rs:69:4"],["row","      2  p 92  Counter::visit_expr_closure  src/primitives/depth.rs:64:8"],["row","      2  p 92  functions_in_source  src/parse.rs:18:8"],["row","      2  p 92  render  src/report.rs:14:8"],["row","      1  p 78  Counter::enter  src/primitives/depth.rs:23:8"],["row","      1  p 78  Counter::visit_expr  src/primitives/density.rs:37:8"],["row","      1  p 78  Counter::visit_expr_binary  src/primitives/branching.rs:44:8"],["",""],["sig","## P1 branching (cyclomatic)"],["dim","  distribution: min 1 · median 1 · p90 2 · p99 8 · max 12 · (mean 1.5)"],["hot","     12  p 99  walk_item  src/parse.rs:27:4"],["row","      7  p 98  main  src/main.rs:8:4"],["row","      6  p 96  pearson  src/rollup.rs:69:8"],["row","      4  p 95  chain_len  src/primitives/density.rs:19:4"],["row","      3  p 91  Counter::visit_expr_closure  src/primitives/depth.rs:64:8"],["row","      3  p 91  functions_in_source  src/parse.rs:18:8"],["row","      3  p 91  record_fn  src/parse.rs:69:4"],["row","      3  p 91  render  src/report.rs:14:8"],["row","      2  p 78  Counter::enter  src/primitives/depth.rs:23:8"],["row","      2  p 78  Counter::visit_expr  src/primitives/density.rs:37:8"],["",""],["sig","## P2 depth (max control nesting)"],["dim","  distribution: min 0 · median 0 · p90 1 · p99 3 · max 4 · (mean 0.3)"],["hot","      4  p 99  walk_item  src/parse.rs:27:4"],["row","      3  p 98  main  src/main.rs:8:4"],["row","      2  p 96  record_fn  src/parse.rs:69:4"],["row","      1  p 79  Counter::enter  src/primitives/depth.rs:23:8"],["row","      1  p 79  Counter::visit_expr  src/primitives/density.rs:37:8"],["row","      1  p 79  Counter::visit_expr_binary  src/primitives/branching.rs:44:8"],["row","      1  p 79  Counter::visit_expr_binary  src/primitives/cognitive.rs:61:8"],["row","      1  p 79  Counter::visit_expr_closure  src/primitives/depth.rs:64:8"],["row","      1  p 79  Counter::visit_stmt  src/primitives/size.rs:24:8"],["row","      1  p 79  chain_len  src/primitives/density.rs:19:4"],["",""],["sig","## P3 size (statements — the baseline)"],["dim","  distribution: min 0 · median 2 · p90 7 · p99 19 · max 25 · (mean 3.4)"],["hot","     25  p 99  render  src/report.rs:14:8"],["row","     18  p 98  walk_item  src/parse.rs:27:4"],["row","     17  p 96  pearson  src/rollup.rs:69:8"],["row","     14  p 95  main  src/main.rs:8:4"],["row","     10  p 94  push_offenders  src/report.rs:59:4"],["row","      9  p 93  record_fn  src/parse.rs:69:4"],["row","      7  p 87  pipeline_tests::a_nested_fn_is_measured…_its_parent  src/lib.rs:49:8"],["row","      7  p 87  pipeline_tests::analyze_source_populate…_end_to_end  src/lib.rs:38:8"],["row","      7  p 87  quantile  src/rollup.rs:46:4"],["row","      7  p 87  tests::distribution_reports_spread_not_just_a_mean  src/rollup.rs:97:8"],["",""],["sig","## P4 state (let bindings) [UNVALIDATED / intuition]"],["dim","  distribution: min 0 · median 0 · p90 2 · p99 5 · max 8 · (mean 0.9)"],["hot","      8  p 99  pearson  src/rollup.rs:69:8"],["row","      5  p 96  main  src/main.rs:8:4"],["row","      5  p 96  pipeline_tests::a_nested_fn_is_measured…_its_parent  src/lib.rs:49:8"],["row","      4  p 93  push_offenders  src/report.rs:59:4"],["row","      4  p 93  quantile  src/rollup.rs:46:4"],["row","      4  p 93  tests::worst_offender_is_first_and_orde…inistic  src/report.rs:139:8"],["row","      3  p 91  render  src/report.rs:14:8"],["row","      3  p 91  tests::finds_free_fns_impl_methods_mod_…th_paths  src/parse.rs:117:8"],["row","      2  p 81  distribution  src/rollup.rs:21:8"],["row","      2  p 81  functions_in_source  src/parse.rs:18:8"],["",""],["sig","## P5 density (max method-chain) [UNVALIDATED / intuition]"],["dim","  distribution: min 0 · median 1 · p90 3 · p99 4 · max 5 · (mean 0.8)"],["hot","      5  p 99  push_offenders  src/report.rs:59:4"],["row","      4  p 98  tests::a_nested_fn_is_its_own_unit_scop…s_parent  src/parse.rs:146:8"],["row","      3  p 88  analyze_source  src/lib.rs:16:8"],["row","      3  p 88  distribution  src/rollup.rs:21:8"],["row","      3  p 88  main  src/main.rs:8:4"],["row","      3  p 88  pipeline_tests::a_nested_fn_is_measured…_its_parent  src/lib.rs:49:8"],["row","      3  p 88  render  src/report.rs:14:8"],["row","      3  p 88  tests::finds_free_fns_impl_methods_mod_…th_paths  src/parse.rs:117:8"],["row","      3  p 88  tests::worst_offender_is_first_and_orde…inistic  src/report.rs:139:8"],["row","      3  p 88  type_name  src/parse.rs:100:4"],["",""],["sig","## correlation"],["dim","branching~size: r=0.69 — much of 'branchy' is really 'big'; read them together."]]}};</script>
 <script>
 /* Demo panes: each project card's media field is a live 2D-canvas render of
    the project's actual MECHANISM (no fake screenshots) — seeded layout,
@@ -1362,6 +1363,48 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       lab(x, x0 + 14, h * 0.94, 'past x*, asking degrades the answer', SIG2);
     },
   };
+
+  /* transcript replay: a REAL captured run, revealed by scroll progress.
+     Pure function of p — no time term — so equal scroll gives equal frames. */
+  function replayDraw(rp) {
+    var LH = 14, FS = 10, PADX = 18, PADY = 14;
+    function fit(x, txt, maxw) {
+      if (x.measureText(txt).width <= maxw) return txt;
+      var tail = txt.slice(-26), head = txt.slice(0, -26);
+      while (head.length > 8 && x.measureText(head + '\u2026' + tail).width > maxw) head = head.slice(0, -4);
+      return head + '\u2026' + tail;
+    }
+    return function (x, w, h, pp) {
+      frame(x, w, h);
+      x.font = FS + 'px "DM Mono", monospace';
+      /* prompt line: the command types out over the first stretch */
+      var typed = Math.round(clamp01(pp / 0.07) * rp.cmd.length);
+      x.fillStyle = SIG2; x.fillText('$ ', PADX, PADY + FS);
+      x.fillStyle = WHT; x.fillText(rp.cmd.slice(0, typed), PADX + 14, PADY + FS);
+      var rows = Math.max(4, Math.floor((h - PADY * 2 - LH * 2.6 - 34) / LH));
+      var n = Math.round(clamp01((pp - 0.09) / 0.72) * rp.lines.length);
+      var start = Math.max(0, n - rows), y = PADY + LH * 2.1;
+      for (var i = start; i < n; i++) {
+        var cls = rp.lines[i][0], txt = rp.lines[i][1];
+        if (txt) {
+          x.fillStyle = cls === 'hd' ? WHT : cls === 'sig' ? SIG2 : cls === 'hot' ? SIG2
+                      : cls === 'wht' ? WHT : cls === 'row' ? 'rgba(223,227,230,.75)' : MUT;
+          if (cls === 'hd' || cls === 'sig') x.font = 'bold ' + FS + 'px "DM Mono", monospace';
+          x.fillText(fit(x, txt, w - PADX * 2), PADX, y + FS);
+          if (cls === 'hd' || cls === 'sig') x.font = FS + 'px "DM Mono", monospace';
+        }
+        y += LH;
+      }
+      if (n < rp.lines.length && typed === rp.cmd.length) {
+        x.fillStyle = SIG; x.fillRect(PADX, y + 3, 7, FS);   /* steady cursor */
+      }
+    };
+  }
+  if (window.__transcripts) {
+    Object.keys(window.__transcripts).forEach(function (k) {
+      DEMOS[k] = replayDraw(window.__transcripts[k]);
+    });
+  }
 
   var setups = panes.map(function (cv, i) {
     var rng = mulberry32(2209 + i * 7919), R = [];
