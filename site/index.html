@@ -13,10 +13,11 @@ whole card (Codrops TiltFx model) and releases with an elastic return.
 BACKGROUND: site/assets/field-render.jpg is a real WebGL render; its generator is archived at
 motion/render-field-generator.html (deterministic, seeded). The old CSS mesh/trace field and
 motion/field-background.* stay retired.
-THE EYE: a cyber Eye of Ra watches the field and its iris follows the cursor. Two renders from
-one camera (motion/render-eye-generator.html): assets/eye-frame.png (lids, socket, Ra marks,
-reticle — static) and assets/eye-iris.png (machined turbine iris — slides and swivels over the
-socket toward the pointer).
+THE EYE: a 3D machined eye watches the field and its iris follows the cursor. Two renders from
+one camera (motion/render-eye-generator.html): assets/eye-frame.png (thick lids, canthus caps,
+socket bowl — static) and assets/eye-iris.png (domed turbine iris — slides and swivels over the
+socket toward the pointer). It blinks at random and slides into the open space beside each
+project card as the page scrolls.
 -->
 <!doctype html>
 <html lang="en">
@@ -73,19 +74,19 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
    reticle) never moves; the iris pass slides and swivels over the dark socket
    toward the cursor. Travel is % of the iris' own box so it scales with the
    layer. */
-.field .eye{position:absolute;top:8vh;right:2vw;width:min(46vw,740px);aspect-ratio:1;perspective:900px;transform:translate3d(0,var(--eye-y,0px),0) scale(var(--eye-scale,1));transform-origin:82% 10%;opacity:var(--eye-fade,.94)}
+.field .eye{position:absolute;top:8vh;right:2vw;width:min(46vw,740px);aspect-ratio:1;perspective:900px;transform:translate3d(var(--eye-x,0px),var(--eye-y,0px),0) scale(var(--eye-scale,1));transform-origin:50% 50%;opacity:var(--eye-fade,.94)}
 .field .eye .eye-inner{position:absolute;inset:0;animation:eye-bob 7.5s ease-in-out infinite alternate}
 .field .eye img{position:absolute;display:block}
 .field .eye .eye-frame{inset:0;width:100%;height:100%}
 .field .eye .iris-gaze{position:absolute;inset:0;transform:translate3d(var(--gx,0%),var(--gy,0%),0) rotateY(var(--gry,0deg)) rotateX(var(--grx,0deg));will-change:transform}
 .field .eye .eye-iris{inset:0;width:100%;height:100%;animation:iris-spin 240s linear infinite}
-.field .eye .eye-glint{inset:0;width:100%;height:100%;pointer-events:none}
-/* blink: a membrane sweeps canthus to canthus — one dark blade with steel
-   edges wipes across the socket left corner to right corner. */
+/* blink: real lids. The top lid does most of the travel, the bottom rises to
+   meet it; close is fast, open is slower. */
 .field .eye .lids{position:absolute;left:31%;top:31%;width:38%;height:38%;border-radius:50%;overflow:hidden;pointer-events:none}
-.field .eye .lids i{position:absolute;top:-2%;height:104%;width:112%;left:-2%;background:#0d1013;display:block;transform:translateX(-110%);border-left:1px solid #333c44;border-right:1px solid #46525c}
-.field .eye .lids.sweep i{animation:lid-sweep .34s cubic-bezier(.45,.05,.55,.95)}
-@keyframes lid-sweep{from{transform:translateX(-110%)}to{transform:translateX(110%)}}
+.field .eye .lids i{position:absolute;left:-2%;width:104%;background:#0d1013;display:block;transition:transform .16s ease-out}
+.field .eye .lid-top{top:0;height:64%;transform:translateY(-103%);border-bottom:1px solid #333c44}
+.field .eye .lid-bot{bottom:0;height:42%;transform:translateY(103%);border-top:1px solid #333c44}
+.field .eye .lids.closed i{transition:transform .08s ease-in;transform:translateY(0)}
 @keyframes eye-bob{to{transform:translateY(7px)}}
 @keyframes iris-spin{to{transform:rotate(360deg)}}
 
@@ -146,6 +147,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 .project-box:nth-of-type(4){--x:11vw;--y:15px}.project-box:nth-of-type(4) .record{background:#12181dd9}
 .project-box:nth-of-type(5){--x:-6vw;--y:-20px}.project-box:nth-of-type(5) .record{background:#151b22d9}
 .project-box:nth-of-type(6){--x:4vw;--y:40px}.project-box:nth-of-type(6) .record{background:#13181ed9}
+.project-box:nth-of-type(7){--x:-5vw;--y:-15px}
 .project-box:hover .record,.project-box:focus-within .record{border-color:var(--signal);background:#161c22ef;box-shadow:0 30px 80px #000b,0 0 0 1px #c9743540 inset}
 
 .project-no{font:10px 'DM Mono';color:var(--signal-2);writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:.12em}
@@ -239,8 +241,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     <div class="eye-inner">
       <img class="eye-frame" src="assets/eye-frame.png" alt="" decoding="async">
       <div class="iris-gaze"><img class="eye-iris" src="assets/eye-iris.png" alt="" decoding="async"></div>
-      <img class="eye-glint" src="assets/eye-glint.png" alt="" decoding="async">
-      <div class="lids"><i></i></div>
+      <div class="lids"><i class="lid-top"></i><i class="lid-bot"></i></div>
     </div>
   </div>
   <div class="vig"></div>
@@ -356,12 +357,45 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     field.style.setProperty('--bg-y', (p * 70) + 'px');
     field.style.setProperty('--bg-scale', String(1 + p * 0.05));
     if (eye) {
-      eye.style.setProperty('--eye-y', (p * 34) + 'px');
-      // the eye comes with you: it shrinks toward the top-right corner as
-      // the hero scrolls away, and keeps watching from there
       var ep = Math.max(0, Math.min(1, scrollY / (innerHeight * 1.15)));
-      eye.style.setProperty('--eye-scale', String(1 - ep * 0.46));
-      eye.style.setProperty('--eye-fade', String(0.94 - ep * 0.26));
+      eye.style.setProperty('--eye-fade', String(0.94 - ep * 0.22));
+      // the eye rides the open space beside the passing card: each card's
+      // larger side gap (measured from its real rect) is the target — the
+      // eye centers in that gap at the card's height, sized to fit it.
+      // Blended by card proximity to the viewport center; the hero pulls
+      // toward the eye's home spot. Deterministic, scroll-linked. Desktop
+      // only: mobile cards have no side gaps.
+      if (innerWidth > 900) {
+        var W = eye.offsetWidth;
+        var homeCx = eye.offsetLeft + W / 2, homeCy = eye.offsetTop + W / 2;
+        var wh = Math.max(0, 1 - scrollY / (innerHeight * 0.8));
+        wh *= wh;
+        var sum = wh, cxA = wh * homeCx, cyA = wh * homeCy, sA = wh * 1;
+        boxes.forEach(function (box) {
+          var r = box.getBoundingClientRect();
+          var w = Math.max(0, 1 - Math.abs(r.top + r.height / 2 - innerHeight / 2) / (innerHeight * 0.55));
+          w *= w; // the nearest card dominates
+          if (!w) return;
+          var gapL = Math.max(0, r.left), gapR = Math.max(0, innerWidth - r.right);
+          var left = gapL >= gapR;
+          var gw = left ? gapL : gapR;
+          cxA += w * (left ? gapL / 2 : r.right + gapR / 2);
+          cyA += w * Math.min(innerHeight * 0.72, Math.max(innerHeight * 0.20, r.top + r.height / 2));
+          sA += w * Math.max(0.24, Math.min(0.62, (gw * 0.85) / W));
+          sum += w;
+        });
+        if (sum > 0.02) {
+          var sB = sA / sum, half = (W * sB) / 2 + 8;
+          var cxB = Math.min(innerWidth - half, Math.max(half, cxA / sum));
+          eye.style.setProperty('--eye-x', (cxB - homeCx) + 'px');
+          eye.style.setProperty('--eye-y', (cyA / sum - homeCy) + 'px');
+          eye.style.setProperty('--eye-scale', String(sB));
+        }
+      } else {
+        eye.style.setProperty('--eye-x', '0px');
+        eye.style.setProperty('--eye-y', (p * 34) + 'px');
+        eye.style.setProperty('--eye-scale', String(1 - ep * 0.5));
+      }
     }
     boxes.forEach(function (box, i) {
       var r = box.getBoundingClientRect();
@@ -384,6 +418,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       field.style.removeProperty('--bg-scale');
       if (eye) {
         eye.style.removeProperty('--eye-y');
+        eye.style.removeProperty('--eye-x');
         eye.style.removeProperty('--eye-scale');
         eye.style.removeProperty('--eye-fade');
       }
@@ -470,12 +505,12 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       }, 2600 + Math.random() * 2600);
     })();
 
-    /* randomized blink: a membrane sweeps canthus to canthus, occasionally doubled */
+    /* randomized blink, occasionally doubled */
     function blink() {
       if (!lidsEl) return;
-      lidsEl.classList.add('sweep');
+      lidsEl.classList.add('closed');
+      setTimeout(function () { lidsEl.classList.remove('closed'); }, 140);
     }
-    if (lidsEl) lidsEl.addEventListener('animationend', function () { lidsEl.classList.remove('sweep'); });
     (function blinkLoop() {
       setTimeout(function () {
         if (!off) { blink(); if (Math.random() < 0.22) setTimeout(blink, 430); }

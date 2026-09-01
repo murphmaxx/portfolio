@@ -8,10 +8,9 @@
 <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// Cyber eye v2 — pure 3D, no flourishes. Three passes from one camera:
+// Cyber eye v2 — pure 3D, no flourishes. Two passes from one camera:
 //   frame: thick machined lids + canthus caps + recessed socket bowl
 //   iris:  domed turbine iris in a barrel housing
-//   glint: static specular arcs (page layers them above the moving iris)
 const SIZE=1400;
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});
 renderer.setSize(SIZE,SIZE,false);renderer.setPixelRatio(1);
@@ -139,22 +138,9 @@ for(let i=0;i<24;i++){
 }
 scene.add(iris);
 
-/* ============ GLINT ============ */
-const glint=new THREE.Group();
-{
-  const g1=new THREE.Mesh(new THREE.TorusGeometry(0.62,0.018,8,64,0.9),new THREE.MeshBasicMaterial({color:0xf3e2cf,transparent:true,opacity:0.8}));
-  g1.rotation.z=1.85; g1.position.z=0.30; glint.add(g1);
-  const g2=new THREE.Mesh(new THREE.TorusGeometry(0.50,0.010,8,64,0.5),new THREE.MeshBasicMaterial({color:0xf3e2cf,transparent:true,opacity:0.45}));
-  g2.rotation.z=2.45; g2.position.z=0.30; glint.add(g2);
-  const spot=new THREE.Mesh(new THREE.SphereGeometry(0.045,12,12),new THREE.MeshBasicMaterial({color:0xf8ece0,transparent:true,opacity:0.9}));
-  spot.position.set(-0.38,0.42,0.32); glint.add(spot);
-}
-scene.add(glint);
-
 window.showPass=function(name){
   frame.visible=(name==='frame'||name==='both');
   iris.visible=(name==='iris'||name==='both');
-  glint.visible=(name==='glint'||name==='both');
   renderer.render(scene,camera);
   return true;
 };
