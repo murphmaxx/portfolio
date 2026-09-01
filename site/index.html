@@ -751,11 +751,32 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
   });
 
   var rafId = 0, bootInit = false;
-  function raf() { if (!rafId) rafId = requestAnimationFrame(frame); }
+  var wdLast = 0, wdWarm = 0, wdSlow = 0, degraded = false;
+  function degrade() {
+    /* the page watches its own frame times; if a machine cannot hold the
+       live world, it steps back to the stills and says so honestly */
+    degraded = true;
+    if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+    window.__sceneLive = false;
+    document.querySelector('.field').classList.remove('live');
+    var chip = document.querySelector('.state');
+    if (chip) chip.textContent = 'Field / static';
+    renderer.dispose();
+  }
+  function raf() { if (!rafId && !degraded) rafId = requestAnimationFrame(frame); }
   var targetQ = new THREE.Quaternion(), tmpO = new THREE.Object3D();
 
   function frame(now) {
     rafId = 0;
+    if (degraded) return;
+    if (wdLast) {
+      var wd = now - wdLast;
+      if (wdWarm > 60) {          /* ignore the boot/warmup frames */
+        if (wd > 40) wdSlow++; else if (wdSlow > 0) wdSlow--;
+        if (wdSlow > 75) { degrade(); return; }  /* ~3s under 25fps */
+      } else { wdWarm++; }
+    }
+    wdLast = now;
     var dt = 1 / 60;
     var tSec = (now - t0) / 1000;
 
@@ -781,8 +802,8 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     if (err < 1.5) mode.t = 0;
     mode.p += (mode.t - mode.p) * 0.10;
     var kx = 10 + 60 * mode.p, ky = 14 + 68 * mode.p, ks = 16 + 42 * mode.p;
-    sx.k = kx; sx.c = 2 * Math.sqrt(kx) * 0.94;
-    sy.k = ky; sy.c = 2 * Math.sqrt(ky) * 0.97;
+    sx.k = kx; sx.c = 2 * Math.sqrt(kx) * (0.95 - 0.16 * mode.p); /* one soft bounce at the perch */
+    sy.k = ky; sy.c = 2 * Math.sqrt(ky) * (0.97 - 0.10 * mode.p);
     ss.k = ks; ss.c = 2 * Math.sqrt(ks) * 1.0;
     stepSpring(sx, dt); stepSpring(sy, dt); stepSpring(ss, dt);
     var bobY = Math.sin(tSec * (2 * Math.PI / 7.5)) * 0.35;
@@ -844,6 +865,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     spin: function () { return iris.rotation.z; },
     shut: function () { return shutTop.scale.y; },
     station: function () { return { kind: station.kind, idx: station.idx }; },
+    degraded: function () { return degraded; },
   };
 
   frame(performance.now());
