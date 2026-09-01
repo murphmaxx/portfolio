@@ -26,6 +26,8 @@ No neon, purple, cyan, pills, glows, or playful color fields. Signal orange is r
 
 The field is a real render: `site/assets/field-render.jpg`, a seeded deterministic three.js scene (machined graphite terrain, steel survey wireframe, warm signal rake light, survey posts). Generator archived at `motion/render-field-generator.html`; re-render via headless Chromium at 2560×1440. The old CSS mesh/trace/marker field and `motion/field-background.*` are retired.
 
+Above the terrain sits the Eye — a cyber Eye of Ra in the same palette (`motion/render-eye-generator.html`, two passes from one camera): `site/assets/eye-frame.png` holds the lids, dark socket, lash ticks, Ra teardrop + tail strokes, and HUD reticle arcs; `site/assets/eye-iris.png` is the machined turbine iris (64 steel blades, 8 signal spokes, orange pupil rim and outer glow ring) on transparency. The two PNGs overlay at identical size, so they align pixel-perfect.
+
 ## Composition
 
 The hero is tall; its rendered field stays fixed while the document scrolls. Project boxes alternate modest x/y offsets to create depth while preserving reading order. The closing settles onto the titanium plane.
@@ -36,7 +38,8 @@ The hero is tall; its rendered field stays fixed while the document scrolls. Pro
 - Inner planes (`.project-info`, `.project-data`, `.media-field`) drift a few px in 2D against the tilt so the record comes apart in depth. No translateZ on children.
 - Release is a JS elastic tween (~900 ms) back to flat. No CSS transition on transform anywhere in that pipeline.
 - Scroll writes only `--shift` (cards) and `--bg-y`/`--bg-scale` (render drift); the tilt handler writes only `--rx/--ry/--px/--py`.
-- Coarse pointers and reduced motion get no tilt; reduced motion starts with the motion toggle off.
+- The Eye's iris follows the cursor anywhere on the page: direction is the vector from the eye's center to the pointer, deflection saturates ~420px out, travel ≤3.2% of the eye box plus ≤9°/7° swivel, gliding at 0.09/frame (heavier than the cards — it is an eyeball). The frame layer never moves; scroll drifts the whole eye slower than the terrain.
+- Coarse pointers and reduced motion get no tilt and a centered gaze; reduced motion starts with the motion toggle off.
 
 ## Controls
 

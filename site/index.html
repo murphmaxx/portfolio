@@ -13,6 +13,10 @@ whole card (Codrops TiltFx model) and releases with an elastic return.
 BACKGROUND: site/assets/field-render.jpg is a real WebGL render; its generator is archived at
 motion/render-field-generator.html (deterministic, seeded). The old CSS mesh/trace field and
 motion/field-background.* stay retired.
+THE EYE: a cyber Eye of Ra watches the field and its iris follows the cursor. Two renders from
+one camera (motion/render-eye-generator.html): assets/eye-frame.png (lids, socket, Ra marks,
+reticle — static) and assets/eye-iris.png (machined turbine iris — slides and swivels over the
+socket toward the pointer).
 -->
 <!doctype html>
 <html lang="en">
@@ -65,6 +69,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 .field{position:fixed;z-index:0;inset:0;overflow:hidden;background:var(--carbon);pointer-events:none}
 .field .render{position:absolute;inset:-7% -4%;width:108%;height:114%;object-fit:cover;object-position:50% 38%;transform:translate3d(0,var(--bg-y,0px),0) scale(var(--bg-scale,1));transition:transform .12s linear}
 .field .vig{position:absolute;inset:0;background:radial-gradient(120% 100% at 50% 42%,transparent 42%,#0a0c0e66 74%,#0a0c0ecc 100%)}
+/* The Eye: two renders from one camera. The frame (lids, socket, Ra marks,
+   reticle) never moves; the iris pass slides and swivels over the dark socket
+   toward the cursor. Travel is % of the iris' own box so it scales with the
+   layer. */
+.field .eye{position:absolute;top:8vh;right:2vw;width:min(46vw,740px);aspect-ratio:1;perspective:900px;transform:translate3d(0,var(--eye-y,0px),0);opacity:.94}
+.field .eye img{position:absolute;display:block}
+.field .eye .eye-frame{inset:0;width:100%;height:100%}
+.field .eye .eye-iris{inset:0;width:100%;height:100%;transform:translate3d(var(--gx,0%),var(--gy,0%),0) rotateY(var(--gry,0deg)) rotateX(var(--grx,0deg));will-change:transform}
 
 .hero{position:relative;z-index:2;min-height:145vh;padding:145px var(--gutter) 0;max-width:1500px;margin:auto}
 .hero-copy{width:min(760px,90vw)}
@@ -156,6 +168,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
   .nav a{min-width:auto;padding:0 11px}
   .hero{padding-top:115px}
   .hero-meta{top:auto;bottom:150px;right:var(--gutter)}
+  .field .eye{width:52vw;right:2vw;top:46vh}
   .project-stage{padding-top:8vh}
   .stage-heading{display:block;margin-bottom:12vh}
   .stage-heading p{margin-top:25px}
@@ -177,6 +190,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
   .hero h1 .accent{margin-left:6vw}
   .hero-intro{margin-top:30px;font-size:14px}
   .hero-meta{left:var(--gutter);right:auto;bottom:120px}
+  .field .eye{width:70vw;right:-4vw;top:44vh;opacity:.85}
   .stage-heading h2{font-size:70px}
   .project-stage{min-height:200vh}
   .project-box{min-height:500px;margin-bottom:18vh}
@@ -193,6 +207,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 }
 html.motion-off .project-box{transform:translate3d(var(--x,0px),calc(var(--y,0px) + var(--shift,0px)),0)!important}
 html.motion-off .record{transform:none!important}
+html.motion-off .eye .eye-iris{transform:none!important}
 html.motion-off .project-box .project-info,html.motion-off .project-box .project-data,html.motion-off .project-box .media-field{transform:none!important}
 </style>
 </head>
@@ -206,6 +221,10 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
 
 <div class="field" aria-hidden="true">
   <img class="render" src="assets/field-render.jpg" alt="" decoding="async">
+  <div class="eye">
+    <img class="eye-frame" src="assets/eye-frame.png" alt="" decoding="async">
+    <img class="eye-iris" src="assets/eye-iris.png" alt="" decoding="async">
+  </div>
   <div class="vig"></div>
 </div>
 
@@ -306,6 +325,9 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
   var scrollRaf = 0;
   var resets = [];
 
+  var eye = document.querySelector('.field .eye');
+  var irisEl = eye ? eye.querySelector('.eye-iris') : null;
+
   /* ---- scroll plane: writes only --bg-y/--bg-scale and per-card --shift ---- */
   function scrollUpdate() {
     scrollRaf = 0;
@@ -314,6 +336,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     var p = Math.min(1, scrollY / max);
     field.style.setProperty('--bg-y', (p * 70) + 'px');
     field.style.setProperty('--bg-scale', String(1 + p * 0.05));
+    if (eye) eye.style.setProperty('--eye-y', (p * 34) + 'px');
     boxes.forEach(function (box, i) {
       var r = box.getBoundingClientRect();
       var progress = Math.max(0, Math.min(1, (innerHeight - r.top) / (innerHeight + box.offsetHeight)));
@@ -333,6 +356,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     if (v) {
       field.style.removeProperty('--bg-y');
       field.style.removeProperty('--bg-scale');
+      if (eye) eye.style.removeProperty('--eye-y');
       boxes.forEach(function (box) { box.style.removeProperty('--shift'); });
       resets.forEach(function (reset) { reset(); });
     } else {
@@ -354,6 +378,50 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     var c = (2 * Math.PI) / 3;
     return Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c) + 1;
   }
+
+  /* ---- gaze: the iris follows the cursor anywhere on the page ----
+     Direction is the vector from the eye's center to the pointer; deflection
+     saturates ~420px out. Same glide-toward-target discipline as the cards.
+     Both passes share one camera and canvas, so the iris img overlays the
+     frame img at full size; travel is a small % of that shared box. */
+  (function () {
+    if (!irisEl) return;
+    var t = { x: 0, y: 0 };   // target, -1..1
+    var g = { x: 0, y: 0 };   // current
+    var raf = 0;
+    var TRAVEL = 3.2;         // % of the shared eye box
+    var ROT_Y = 9, ROT_X = 7; // deg
+
+    function write() {
+      irisEl.style.setProperty('--gx', (g.x * TRAVEL).toFixed(2) + '%');
+      irisEl.style.setProperty('--gy', (g.y * TRAVEL).toFixed(2) + '%');
+      irisEl.style.setProperty('--gry', (g.x * ROT_Y).toFixed(2) + 'deg');
+      irisEl.style.setProperty('--grx', (-g.y * ROT_X).toFixed(2) + 'deg');
+    }
+    function follow() {
+      raf = 0;
+      g.x += (t.x - g.x) * 0.09;
+      g.y += (t.y - g.y) * 0.09;
+      write();
+      if (Math.abs(t.x - g.x) > 0.002 || Math.abs(t.y - g.y) > 0.002) raf = requestAnimationFrame(follow);
+    }
+    resets.push(function () {
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      t.x = t.y = g.x = g.y = 0;
+      write();
+    });
+    addEventListener('pointermove', function (event) {
+      if (off || coarse.matches) return;
+      var r = eye.getBoundingClientRect();
+      var dx = event.clientX - (r.left + r.width / 2);
+      var dy = event.clientY - (r.top + r.height / 2);
+      var dist = Math.hypot(dx, dy);
+      var mag = dist ? Math.min(1, dist / 420) : 0;
+      t.x = dist ? (dx / dist) * mag : 0;
+      t.y = dist ? (dy / dist) * mag : 0;
+      if (!raf) raf = requestAnimationFrame(follow);
+    }, { passive: true });
+  })();
 
   boxes.forEach(function (box) {
     var target = { rx: 0, ry: 0, px: 0, py: 0 };
