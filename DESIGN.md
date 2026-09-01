@@ -32,6 +32,10 @@ Fallback: the pre-rendered stills remain in the DOM (`site/assets/field-render.j
 
 The hero is tall; its rendered field stays fixed while the document scrolls. Project boxes alternate modest x/y offsets to create depth while preserving reading order. The closing settles onto the titanium plane.
 
+## Media panes
+- The card's right pane is a DEMO RENDER, never text: a live canvas diagram of the project's real mechanism, in-palette, seeded, scrubbed by scroll, idling gently. Honest diagrams only — no fake screenshots, no invented numbers; every labeled element corresponds to something the project actually does. Replaceable by real captured media without layout change.
+- Text (description + claim readout) lives in the left column. Readout stays at 7 claim rows max.
+
 ## Motion grammar
 
 - Camera: cursor parallax + scroll dolly, spring-damped (k=14, zeta=0.9). Every layer of the world shifts perspective together — this, not any single effect, is the basement feel.
