@@ -660,6 +660,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
      flap) it DARTS: a glance toward the destination, usually a blink in
      flight (gaze-evoked), stiff springs with a hint of overshoot, then
      back to lazy hold springs that softly ride the card. ---- */
+  var closingEl = document.querySelector('.closing');
   var station = { kind: 'hero', idx: -1 };
   var glanceUntil = 0, glancePt = null;
   var mode = { p: 0, t: 0 };   /* 0 = hold, 1 = dart; blended, never switched */
@@ -671,12 +672,20 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
   }
   function stationCoverage(st) {
     if (st.kind === 'hero') return Math.max(0, 1 - scrollY / (innerHeight * 0.9)) * 0.5;
+    if (st.kind === 'closing') return coverage(closingEl.getBoundingClientRect());
     return coverage(boxes[st.idx].getBoundingClientRect());
   }
   function stationTarget(st) {
     var W = Math.min(innerWidth * 0.46, 740);
     if (st.kind === 'hero') {
       return { cx: innerWidth - innerWidth * 0.02 - W / 2, cy: innerHeight * 0.08 + W / 2, px: W };
+    }
+    if (st.kind === 'closing') {
+      /* send-off: center of the field strip above the rising titanium plane;
+         scrolling further lets the plane cover the eye — the page's exit */
+      var strip = Math.max(0, closingEl.getBoundingClientRect().top);
+      var pxc = Math.max(W * 0.22, Math.min(W * 0.55, strip * 0.72));
+      return { cx: innerWidth / 2, cy: strip * 0.5, px: pxc };
     }
     var r = boxes[st.idx].getBoundingClientRect();
     var gapL = Math.max(0, r.left), gapR = Math.max(0, innerWidth - r.right);
@@ -695,6 +704,8 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       var c = coverage(box.getBoundingClientRect());
       if (c > bestCov) { bestCov = c; best = { kind: 'card', idx: i }; }
     });
+    var cc = coverage(closingEl.getBoundingClientRect());
+    if (cc > bestCov) { bestCov = cc; best = { kind: 'closing', idx: -1 }; }
     if (best.kind === station.kind && best.idx === station.idx) return;
     /* hysteresis: the incumbent keeps the eye until the challenger clearly
        owns the screen, or the incumbent has essentially left it */
@@ -705,7 +716,8 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       var wp2 = screenToWorld(dest.cx, dest.cy, EZ + 26);
       glancePt = wp2; glanceUntil = performance.now() + 220;   /* look where you're going */
       mode.t = 1;                                               /* dart */
-      if (Math.random() < 0.75) blink();                        /* gaze-evoked blink */
+      if (station.kind === 'closing') setTimeout(blink, 750);   /* one deliberate blink, gaze held */
+      else if (Math.random() < 0.75) blink();                   /* gaze-evoked blink */
     }
   }
 
@@ -816,6 +828,8 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     var lookPt;
     if (glancePt && now < glanceUntil) {
       lookPt = glancePt;
+    } else if (station.kind === 'closing') {
+      lookPt = camera.position; /* send-off: it stops following the cursor and looks at YOU */
     } else {
       lookPt = screenToWorld(
         Math.max(0, Math.min(innerWidth, px + lookOffset.x)),
