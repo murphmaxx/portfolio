@@ -189,6 +189,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 .footer{position:relative;z-index:4;display:flex;justify-content:space-between;gap:20px;padding:25px 150px 25px var(--gutter);border-top:1px solid #10141833;background:var(--titanium);color:var(--ink);font:10px 'DM Mono';text-transform:uppercase}
 .footer a{color:inherit;text-decoration:none;border-bottom:1px solid #10141855}
 .footer a:hover{color:var(--signal-dark);border-color:var(--signal-dark)}
+.mobile-note{display:none}
 .closing p.closing-id{margin-top:28px;font:11px 'DM Mono';letter-spacing:.06em;text-transform:uppercase;color:#101418b3;max-width:none}
 .closing-id a{white-space:nowrap}
 .closing-id a{color:inherit;text-decoration:none;border-bottom:1px solid #10141855}
@@ -254,6 +255,20 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
   .project-info p{font-size:13px}
   .media-field{min-height:260px}
   .closing h2{font-size:80px}
+}
+@media(max-width:700px){
+  /* mobile is deliberately just the hero and the contact plane (user
+     direction 2026-09-01) — the records live on the desktop site */
+  .project-stage{display:none}
+  .nav{display:none}
+  .hero-action{display:none}
+  .motion-control{display:none}
+  .rail{display:none}
+  .hero{min-height:96vh}
+  .scroll-note{display:none}
+  .hero-meta{display:none}
+  .closing .mobile-note{display:block;max-width:340px;font-size:13px;line-height:1.6;color:#101418c9;margin-top:24px}
+  .footer{padding-right:var(--gutter)}
 }
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -426,6 +441,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
 <section class="closing" id="contact">
   <div>
     <h2>Inspect the work.<br><span>Then decide.</span></h2>
+    <p class="mobile-note">Six project records — a live governed session, real transcripts, a real self-scan — run on the desktop site.</p>
     <p class="closing-id">Owen Murphy · <a href="https://github.com/murphmaxx" target="_blank" rel="noopener">github.com/murphmaxx</a> · <a href="https://x.com/omurpph" target="_blank" rel="me noopener">x.com/omurpph</a> · <a href="https://www.linkedin.com/in/omurph/" target="_blank" rel="me noopener">linkedin.com/in/omurph</a> · <a href="mailto:omurphy@ourosproject.com">omurphy@ourosproject.com</a></p>
   </div>
   <a class="action" href="mailto:omurphy@ourosproject.com?subject=MURPH%2FSYSTEMS"><span>Contact</span><span class="action-icon"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M9 5h10v10"/></svg></span></a>
