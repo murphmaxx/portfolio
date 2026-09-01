@@ -51,4 +51,6 @@ Desktop uses offsets, scroll parallax, and pointer tilt. ≤900px collapses reco
 
 ## Content boundary
 
-The approved tagline is “Systems that show their work.” (supersedes “Controls for consequential AI.”, 2026-08-31). Project descriptions and evidence labels remain provisional until real source material is reviewed.
+The approved tagline is “Systems that show their work.” (supersedes “Controls for consequential AI.”, 2026-08-31).
+
+Card content is REAL as of 2026-08-31 — every number measured from the repos on that date (LOC via `git grep -c ''`, test counts via `git grep -c '#[test]'`, descriptions distilled from each repo's README, paper terms from `ouros-mono/docs/paper/DRAFT.md`). The media panes are instrument readouts of those measurements, each with a `Surveyed <date>` tag — re-survey when the numbers drift. Public repos (grounded, eyeofrah, crucible → github.com/murphmaxx) link directly; private ones (ouros, canopy) and the paper draft route to mailto:omurphy@ourosproject.com. The client name behind grounded's first deployment and the red-team vendor's name stay OFF the site.

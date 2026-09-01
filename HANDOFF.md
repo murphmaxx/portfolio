@@ -43,9 +43,8 @@ Kill stale servers on 4174 first (`lsof -nP -i :4174`) — a hung old instance r
 
 ## Open items
 
-- Project links (`Inspect` actions) still point at `#`; real repository/demo URLs pending.
-- Contact action target pending.
-- Project descriptions/evidence labels remain provisional until real source material is reviewed.
+- CONTENT IS REAL (2026-08-31): descriptions from the repos' own READMEs, media panes are measured readouts (LOC/tests/commits surveyed that day — see DESIGN.md content boundary for the measurement method), public repos linked (murphmaxx/grounded·eyeofrah·crucible), private ones (ouros, canopy) + the Cost of Asking draft route to omurphy@ourosproject.com mailtos. Card geometry changed to `min(100% - 10vw, 1240px)` with offsets capped ±5vw — the old full-width+offset cards silently overflowed the viewport at 1440 and truncated the new readout values.
+- Remaining: media panes could later carry real imagery/demos on top of the readouts; wide-viewport (1512/2560) screenshot pass; per-project detail pages if ever wanted; the closing section's eye send-off.
 - Publishing (GitHub Pages) awaits the user's go.
 
 ## Git discipline
