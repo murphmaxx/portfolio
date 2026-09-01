@@ -68,9 +68,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 /* Persistent rendered field. The render is the only background layer;
    scroll drifts it slowly and a fixed vignette holds the edges. */
 .field{position:fixed;z-index:0;inset:0;overflow:hidden;background:var(--carbon);pointer-events:none}
-.field #scene{position:absolute;inset:0;width:100%;height:100%;display:none}
-.field.live #scene{display:block}
-.field.live .render,.field.live .eye{display:none}
+.field #scene{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .9s ease}
+.field.live #scene{opacity:1}
+.field.live .render,.field.live .eye{opacity:0!important;visibility:hidden;transition:opacity .9s ease,visibility 0s .9s}
 .field .render{position:absolute;inset:-7% -4%;width:108%;height:114%;object-fit:cover;object-position:50% 38%;transform:translate3d(0,var(--bg-y,0px),0) scale(var(--bg-scale,1));transition:transform .12s linear}
 .field .vig{position:absolute;inset:0;background:radial-gradient(120% 100% at 50% 42%,transparent 42%,#0a0c0e66 74%,#0a0c0ecc 100%)}
 /* The Eye: two renders from one camera. The frame (lids, socket, Ra marks,
@@ -353,7 +353,6 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
   } catch (e) { return; }
   window.__sceneLive = true;
-  document.querySelector('.field').classList.add('live');
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
   renderer.setSize(innerWidth, innerHeight, false);
 
@@ -534,7 +533,22 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
   shutTop.visible = shutBot.visible = false;
   eyeGroup.add(shutTop); eyeGroup.add(shutBot);
 
-  scene.add(eyeGroup);
+  /* The eye renders in its own pass with the depth buffer cleared: same
+     camera (so parallax matches exactly), but the terrain can never clip
+     it — the watcher is always whole. Own light rig (the generator's). */
+  var eyeScene = new THREE.Scene();
+  eyeScene.add(eyeGroup);
+  eyeScene.add(new THREE.HemisphereLight(0x39434e, 0x07090c, 0.9));
+  var ekey = new THREE.DirectionalLight(0xd58042, 2.2); ekey.position.set(-16, 14, 60); eyeScene.add(ekey);
+  var efill = new THREE.DirectionalLight(0x54626f, 0.9); efill.position.set(18, 4, 58); eyeScene.add(efill);
+  var eunder = new THREE.DirectionalLight(0x39434e, 0.5); eunder.position.set(4, -16, 52); eyeScene.add(eunder);
+  renderer.autoClear = false;
+  function renderFrame() {
+    renderer.clear();
+    renderer.render(scene, camera);
+    renderer.clearDepth();
+    renderer.render(eyeScene, camera);
+  }
 
   /* ============ behavior state ============ */
   var off = document.documentElement.classList.contains('motion-off');
@@ -612,7 +626,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     off = e.detail.off;
     if (off) {
       sx.v = sy.v = ss.v = camX.v = camY.v = 0;
-      renderer.render(scene, camera); /* freeze on a clean frame */
+      renderFrame(); /* freeze on a clean frame */
     } else {
       raf();
     }
@@ -683,7 +697,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     /* motes drift */
     motes.rotation.y = tSec * 0.004;
 
-    renderer.render(scene, camera);
+    renderFrame();
     if (!off && !document.hidden) raf();
   }
   document.addEventListener('visibilitychange', function () { if (!document.hidden && !off) raf(); });
@@ -703,7 +717,11 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     shut: function () { return shutTop.scale.y; },
   };
 
-  if (!off) raf(); else { frame(performance.now()); }
+  frame(performance.now());
+  document.querySelector('.field').classList.add('live');
+  var chip = document.querySelector('.state');
+  if (chip) chip.textContent = 'Field / live';
+  if (!off) raf();
 })();
 </script>
 <script>
