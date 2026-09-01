@@ -41,6 +41,10 @@ The hero is tall; its rendered field stays fixed while the document scrolls. Pro
 - Blink: two half-disc shutters in front of the socket; close 80ms, hold 110ms, open 170ms; random 4–9s cadence, 22% double.
 - Motion off / reduced motion: the main script broadcasts a `motionchange` event; the scene freezes on a clean frame and idle clocks skip. The DOM fallback keeps its own identical behavior set for non-live contexts.
 
+## Wayfinding
+
+A fixed record rail on the left edge (desktop only): entries 01–06, each an anchor to its card, lit by the same viewport-majority rule that owns the eye — the instrument and the index agree about where you are. Hidden in the hero and the closing (no majority owner).
+
 ## Controls
 
 Rectangular actions with separate arrow cells. No pills. The control language is an instrument panel, not a marketing button.

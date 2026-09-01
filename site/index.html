@@ -25,7 +25,12 @@ project card as the page scrolls.
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0a0c0e">
-<link rel="icon" href="data:,">
+<meta name="description" content="Owen Murphy — systems that show their work. Governed AI execution, agent control surfaces, local grounded answers, interpretability, and deterministic measurement.">
+<meta property="og:title" content="MURPH/SYSTEMS — systems that show their work">
+<meta property="og:description" content="Six project records, each with a technical boundary, measured evidence, and the receipts.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://murphmaxx.github.io/portfolio/site/assets/field-render.jpg">
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="none" stroke="%23c97435" stroke-width="2.5"/><circle cx="16" cy="16" r="5" fill="%23c97435"/></svg>'>
 <title>MURPH/SYSTEMS — systems that show their work</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=DM+Mono:wght@400;500&display=swap');
@@ -46,6 +51,10 @@ project card as the page scrolls.
   --gutter:clamp(22px,5vw,82px);
 }
 *{box-sizing:border-box}
+::-webkit-scrollbar{width:10px}
+::-webkit-scrollbar-track{background:var(--carbon)}
+::-webkit-scrollbar-thumb{background:#333c44;border:2px solid var(--carbon)}
+::-webkit-scrollbar-thumb:hover{background:var(--signal-dark)}
 html{background:var(--carbon);scroll-behavior:smooth}
 body{margin:0;background:var(--carbon);color:var(--white);font-family:Archivo,Arial,sans-serif;overflow-x:hidden}
 ::selection{background:var(--signal);color:var(--white)}
@@ -162,7 +171,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 .media-field{grid-column:3;grid-row:1/3;min-height:335px;position:relative;border:1px solid var(--line);background:#0d1115cc;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
 .media-field:before{content:'';position:absolute;inset:0;background:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:34px 34px}
 .readout{position:relative;margin:0;padding:22px 24px 42px}
-.readout>div{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:10px 2px;border-bottom:1px solid #ffffff0d;font:10px 'DM Mono';letter-spacing:.05em;text-transform:uppercase}
+.readout>div{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:8px 2px;border-bottom:1px solid #ffffff0d;font:10px 'DM Mono';letter-spacing:.05em;text-transform:uppercase}
 .readout dt{color:var(--muted);margin:0}
 .readout dd{color:var(--white);margin:0;text-align:right}
 .readout .hot dd{color:var(--signal-2)}
@@ -178,6 +187,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 
 .footer{position:relative;z-index:4;display:flex;justify-content:space-between;padding:25px var(--gutter);border-top:1px solid #10141833;background:var(--titanium);color:var(--ink);font:10px 'DM Mono';text-transform:uppercase}
 
+.rail{position:fixed;z-index:35;left:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:13px;opacity:0;pointer-events:none;transition:opacity .35s var(--ease)}
+.rail.show{opacity:1;pointer-events:auto}
+.rail a{display:flex;align-items:center;gap:8px;font:10px 'DM Mono';letter-spacing:.08em;color:var(--muted);text-decoration:none}
+.rail a:before{content:'';display:block;width:12px;height:1px;background:var(--line);transition:width .25s var(--ease),background .25s}
+.rail a.on{color:var(--signal-2)}
+.rail a.on:before{width:26px;background:var(--signal)}
+.rail a:hover{color:var(--white)}
+@media(max-width:900px){.rail{display:none}}
 .motion-control{position:fixed;z-index:45;right:18px;bottom:18px;min-height:42px;padding:0 13px;border:1px solid var(--line);background:var(--carbon);color:var(--muted);font:10px 'DM Mono';text-transform:uppercase;cursor:pointer}
 .motion-control:hover{color:var(--white);border-color:var(--signal)}
 
@@ -272,7 +289,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     <p>Six project records, each with a technical boundary, evidence path, and media surface.</p>
   </div>
 
-  <div class="project-box">
+  <div class="project-box" id="rec-1">
     <div class="record">
     <div class="project-no">01 / Runtime</div>
     <div class="project-info"><h3>Ouros</h3><p>A governed execution runtime for AI agents. Every consequential action passes a policy gate, and the decision is written to a tamper-evident audit record before the action takes effect — no record, no effect.</p></div>
@@ -283,11 +300,13 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
         <div><dt>Audit</dt><dd>record-before-effect</dd></div>
         <div><dt>Policy</dt><dd>Cedar + Merkle</dd></div>
         <div class="hot"><dt>Red team</dt><dd>external — findings closed</dd></div>
+        <div><dt>Workspace</dt><dd>4 crates — runtime · proxy · infer · macros</dd></div>
+        <div><dt>Hardening</dt><dd>post-quantum signatures</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
 
-  <div class="project-box">
+  <div class="project-box" id="rec-2">
     <div class="record">
     <div class="project-no">02 / Control</div>
     <div class="project-info"><h3>Canopy</h3><p>The control panel for agent execution: one instrument through which operator and agents hold the same picture of all work in flight — and the code tells the truth about itself, even when that is unflattering.</p></div>
@@ -298,11 +317,13 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
         <div><dt>Tests</dt><dd>722 functions</dd></div>
         <div><dt>Commits</dt><dd>391</dd></div>
         <div class="hot"><dt>Truth source</dt><dd>the code itself</dd></div>
+        <div><dt>Ships as</dt><dd>installed macOS app</dd></div>
+        <div><dt>Workspace</dt><dd>apps + crates</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
 
-  <div class="project-box">
+  <div class="project-box" id="rec-3">
     <div class="record">
     <div class="project-no">03 / Local AI</div>
     <div class="project-info"><h3>Grounded</h3><p>An offline question-answering appliance for document-heavy work. It runs on a machine inside the business, answers only from a fixed corpus, and attaches a citation to every claim so the answer can be checked against its source.</p></div>
@@ -313,11 +334,13 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
         <div class="hot"><dt>Citations</dt><dd>one per claim</dd></div>
         <div><dt>Network</dt><dd>no egress</dd></div>
         <div><dt>Corpus</dt><dd>fixed, authoritative</dd></div>
+        <div><dt>Answer audit</dt><dd>every answer logged</dd></div>
+        <div><dt>Governance</dt><dd>gate module + tests</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
 
-  <div class="project-box">
+  <div class="project-box" id="rec-4">
     <div class="record">
     <div class="project-no">04 / Research</div>
     <div class="project-info"><h3>Eyeofrah</h3><p>A GPT-2 inference engine in Rust that exposes the model’s intermediate activations as a readable, writable surface. Attention, MLP, LayerNorm and the residual path are owned directly, so any value can be traced, decoded, or modified.</p></div>
@@ -327,11 +350,14 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
         <div><dt>Forward pass</dt><dd>hand-rolled, 1,070 lines</dd></div>
         <div><dt>Tensors</dt><dd>candle — matmul only</dd></div>
         <div class="hot"><dt>Surface</dt><dd>trace · decode · modify</dd></div>
+        <div><dt>Owned ops</dt><dd>attention · MLP · LN · residual</dd></div>
+        <div><dt>Calibration</dt><dd>1,000-prompt set</dd></div>
+        <div><dt>Precision</dt><dd>F32 attention, always</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
 
-  <div class="project-box">
+  <div class="project-box" id="rec-5">
     <div class="record">
     <div class="project-no">05 / Measure</div>
     <div class="project-info"><h3>Crucible</h3><p>A deterministic simplicity engine for Rust. It measures how complex code actually is, ranks every function against the rest of its own codebase, and refuses to report anything it cannot back with a number and a source span.</p></div>
@@ -342,11 +368,13 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
         <div><dt>Tests</dt><dd>26</dd></div>
         <div><dt>Ranking</dt><dd>per-function, in-codebase</dd></div>
         <div class="hot"><dt>Claims</dt><dd>number + span, or nothing</dd></div>
+        <div><dt>Reading</dt><dd>function-level source spans</dd></div>
+        <div><dt>CI</dt><dd>GitHub Actions</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
 
-  <div class="project-box">
+  <div class="project-box" id="rec-6">
     <div class="record">
     <div class="project-no">06 / Writing</div>
     <div class="project-info"><h3>The Cost of Asking.</h3><p>Working paper on the operational economics of human judgment in autonomous missions: five cost terms, a threshold past which more governance degrades decisions, and the conclusion that governance must move from runtime to design time.</p></div>
@@ -356,6 +384,8 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
         <div><dt>Terms</dt><dd>latency · emission · span · compression · opportunity</dd></div>
         <div><dt>Finding</dt><dd>span-of-control cuts both ways</dd></div>
         <div class="hot"><dt>Conclusion</dt><dd>runtime → design time</dd></div>
+        <div><dt>Regime</dt><dd>decisions ~10⁶ rarer than syscalls</dd></div>
+        <div><dt>Home</dt><dd>measured on the ouros runtime</dd></div>
         <div><dt>Status</dt><dd>working draft</dd></div>
       </dl><span class="readout-tag">Draft — 2026-08</span></div>
     </div>
@@ -365,13 +395,15 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
 <section class="closing" id="contact">
   <div>
     <h2>Inspect the work.<br><span>Then decide.</span></h2>
-    <p>Public repositories where they exist, demonstrations on request for the rest, and the limitations stated plainly either way.</p>
   </div>
   <a class="action" href="mailto:omurphy@ourosproject.com?subject=MURPH%2FSYSTEMS"><span>Contact</span><span class="action-icon"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M9 5h10v10"/></svg></span></a>
 </section>
 </main>
 
 <footer class="footer"><span>Technical portfolio / field prototype</span><span>Evidence before assertion</span></footer>
+<nav class="rail" aria-label="Project records">
+  <a href="#rec-1">01</a><a href="#rec-2">02</a><a href="#rec-3">03</a><a href="#rec-4">04</a><a href="#rec-5">05</a><a href="#rec-6">06</a>
+</nav>
 <button class="motion-control" id="motionControl" type="button" aria-pressed="false">Motion: on</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -881,6 +913,29 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
   addEventListener('scroll', function () {
     if (!scrollRaf) scrollRaf = requestAnimationFrame(scrollUpdate);
   }, { passive: true });
+
+  /* ---- record rail: lit by the same majority rule as the eye ---- */
+  var rail = document.querySelector('.rail');
+  var railLinks = rail ? Array.prototype.slice.call(rail.querySelectorAll('a')) : [];
+  var railRaf = 0;
+  function railUpdate() {
+    railRaf = 0;
+    if (!rail) return;
+    var best = -1, bestCov = 0.04;
+    boxes.forEach(function (box, i) {
+      var r = box.getBoundingClientRect();
+      var w = Math.max(0, Math.min(r.right, innerWidth) - Math.max(r.left, 0));
+      var h = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+      var cov = (w * h) / (innerWidth * innerHeight);
+      if (cov > bestCov) { bestCov = cov; best = i; }
+    });
+    rail.classList.toggle('show', best >= 0);
+    railLinks.forEach(function (a, i) { a.classList.toggle('on', i === best); });
+  }
+  addEventListener('scroll', function () {
+    if (!railRaf) railRaf = requestAnimationFrame(railUpdate);
+  }, { passive: true });
+  railUpdate();
 
   /* ---- motion toggle ---- */
   function setMotion(v) {
