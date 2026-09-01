@@ -32,7 +32,7 @@ The hero is tall; its rendered field stays fixed while the document scrolls. Pro
 
 ## Motion grammar
 
-- Card tilt is the keel/Codrops TiltFx model: the outer `.project-box` never rotates — it owns layout offset, scroll shift, perspective, and the pointer listeners, so hit geometry stays stable; the inner `.record` rotates (±6° X, ±10° Y), a linear function of pointer position across the whole card.
+- Card tilt is the keel/Codrops TiltFx model: the outer `.project-box` never rotates — it owns layout offset, scroll shift, perspective, and the pointer listeners, so hit geometry stays stable; the inner `.record` rotates (±6° X, ±10° Y). The pointer sets a linear target; the card glides toward it (lerp 0.16/frame, ~200 ms settle) so crossing an edge never snaps, then tracks 1:1.
 - Inner planes (`.project-info`, `.project-data`, `.media-field`) drift a few px in 2D against the tilt so the record comes apart in depth. No translateZ on children.
 - Release is a JS elastic tween (~900 ms) back to flat. No CSS transition on transform anywhere in that pipeline.
 - Scroll writes only `--shift` (cards) and `--bg-y`/`--bg-scale` (render drift); the tilt handler writes only `--rx/--ry/--px/--py`.

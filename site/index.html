@@ -341,11 +341,12 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
   }
   control.addEventListener('click', function () { setMotion(!off); });
 
-  /* ---- pointer tilt: keel/Codrops model ----
-     The card is the listener and the geometry source. While the pointer is
-     over the card the tilt is a linear function of pointer position (no lag,
-     no lerp). On leave, an elastic tween returns every value to zero. Writes
-     only --rx/--ry/--px/--py. */
+  /* ---- pointer tilt: keel/Codrops model with a glide ----
+     The stationary box is the listener and the geometry source. The pointer
+     sets a TARGET tilt (linear in pointer position); the card glides toward
+     it at GLIDE per frame, so crossing an edge never snaps the card to full
+     tilt in one frame. Once settled it tracks 1:1. On leave, an elastic
+     tween returns every value to zero. Writes only --rx/--ry/--px/--py. */
   var ROT_X = 6, ROT_Y = 10, PAR_X = 9, PAR_Y = 7;
 
   function elastic(t) {
@@ -355,8 +356,12 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
   }
 
   boxes.forEach(function (box) {
+    var target = { rx: 0, ry: 0, px: 0, py: 0 };
     var s = { rx: 0, ry: 0, px: 0, py: 0 };
+    var followRaf = 0;
     var releaseRaf = 0;
+    var GLIDE = 0.16;
+    var KEYS = ['rx', 'ry', 'px', 'py'];
 
     function write() {
       box.style.setProperty('--rx', s.rx.toFixed(3) + 'deg');
@@ -365,8 +370,22 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       box.style.setProperty('--py', s.py.toFixed(2) + 'px');
     }
 
+    function follow() {
+      followRaf = 0;
+      var settled = true;
+      KEYS.forEach(function (k) {
+        s[k] += (target[k] - s[k]) * GLIDE;
+        if (Math.abs(target[k] - s[k]) > 0.005) settled = false;
+        else s[k] = target[k];
+      });
+      write();
+      if (!settled) followRaf = requestAnimationFrame(follow);
+    }
+
     function zero() {
+      if (followRaf) { cancelAnimationFrame(followRaf); followRaf = 0; }
       if (releaseRaf) { cancelAnimationFrame(releaseRaf); releaseRaf = 0; }
+      target.rx = target.ry = target.px = target.py = 0;
       s.rx = s.ry = s.px = s.py = 0;
       write();
     }
@@ -380,15 +399,17 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       var ny = ((event.clientY - rect.top) / rect.height) * 2 - 1;
       nx = Math.max(-1, Math.min(1, nx));
       ny = Math.max(-1, Math.min(1, ny));
-      s.rx = -ny * ROT_X;
-      s.ry = nx * ROT_Y;
-      s.px = -nx * PAR_X;
-      s.py = -ny * PAR_Y;
-      write();
+      target.rx = -ny * ROT_X;
+      target.ry = nx * ROT_Y;
+      target.px = -nx * PAR_X;
+      target.py = -ny * PAR_Y;
+      if (!followRaf) followRaf = requestAnimationFrame(follow);
     });
 
     box.addEventListener('pointerleave', function () {
       if (off || coarse.matches) return;
+      if (followRaf) { cancelAnimationFrame(followRaf); followRaf = 0; }
+      target.rx = target.ry = target.px = target.py = 0;
       var from = { rx: s.rx, ry: s.ry, px: s.px, py: s.py };
       var t0 = performance.now(), DUR = 900;
       if (releaseRaf) cancelAnimationFrame(releaseRaf);
