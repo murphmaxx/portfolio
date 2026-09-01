@@ -570,30 +570,59 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     px = e.clientX; py = e.clientY; lastMove = performance.now();
   }, { passive: true });
 
-  /* screen-space eye targets: same gap logic as the DOM fallback */
-  function eyeScreenTarget() {
+  /* ---- station model: the eye COMMITS (user direction: majority owner).
+     Whichever card covers the most viewport owns the eye; the hero owns it
+     near the top. No blended in-between positions — the eye holds its
+     station, and when ownership flips (with hysteresis so boundaries never
+     flap) it DARTS: a glance toward the destination, usually a blink in
+     flight (gaze-evoked), stiff springs with a hint of overshoot, then
+     back to lazy hold springs that softly ride the card. ---- */
+  var station = { kind: 'hero', idx: -1 };
+  var travelUntil = 0, glanceUntil = 0, glancePt = null;
+
+  function coverage(r) {
+    var w = Math.max(0, Math.min(r.right, innerWidth) - Math.max(r.left, 0));
+    var h = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0));
+    return (w * h) / (innerWidth * innerHeight);
+  }
+  function stationCoverage(st) {
+    if (st.kind === 'hero') return Math.max(0, 1 - scrollY / (innerHeight * 0.9)) * 0.5;
+    return coverage(boxes[st.idx].getBoundingClientRect());
+  }
+  function stationTarget(st) {
     var W = Math.min(innerWidth * 0.46, 740);
-    var homeCx = innerWidth - innerWidth * 0.02 - W / 2, homeCy = innerHeight * 0.08 + W / 2;
-    var wh = Math.max(0, 1 - scrollY / (innerHeight * 0.8)); wh *= wh;
-    var sum = wh, cxA = wh * homeCx, cyA = wh * homeCy, sA = wh * W;
-    boxes.forEach(function (box) {
-      var r = box.getBoundingClientRect();
-      var w = Math.max(0, 1 - Math.abs(r.top + r.height / 2 - innerHeight / 2) / (innerHeight * 0.55));
-      w *= w; if (!w) return;
-      var gapL = Math.max(0, r.left), gapR = Math.max(0, innerWidth - r.right);
-      var left = gapL >= gapR, gw = left ? gapL : gapR;
-      cxA += w * (left ? gapL / 2 : r.right + gapR / 2);
-      cyA += w * Math.min(innerHeight * 0.72, Math.max(innerHeight * 0.20, r.top + r.height / 2));
-      sA += w * Math.max(W * 0.24, Math.min(W * 0.62, gw * 0.85));
-      sum += w;
-    });
-    if (sum < 0.02) return null;
-    var pxSize = sA / sum, half = pxSize / 2 + 8;
+    if (st.kind === 'hero') {
+      return { cx: innerWidth - innerWidth * 0.02 - W / 2, cy: innerHeight * 0.08 + W / 2, px: W };
+    }
+    var r = boxes[st.idx].getBoundingClientRect();
+    var gapL = Math.max(0, r.left), gapR = Math.max(0, innerWidth - r.right);
+    var left = gapL >= gapR, gw = left ? gapL : gapR;
+    var pxSize = Math.max(W * 0.24, Math.min(W * 0.62, gw * 0.85));
+    var half = pxSize / 2 + 8;
     return {
-      cx: Math.min(innerWidth - half, Math.max(half, cxA / sum)),
-      cy: cyA / sum,
+      cx: Math.min(innerWidth - half, Math.max(half, left ? gapL / 2 : r.right + gapR / 2)),
+      cy: Math.min(innerHeight * 0.66, Math.max(innerHeight * 0.22, r.top + r.height / 2)),
       px: pxSize,
     };
+  }
+  function pickStation() {
+    var best = { kind: 'hero', idx: -1 }, bestCov = stationCoverage(best);
+    boxes.forEach(function (box, i) {
+      var c = coverage(box.getBoundingClientRect());
+      if (c > bestCov) { bestCov = c; best = { kind: 'card', idx: i }; }
+    });
+    if (best.kind === station.kind && best.idx === station.idx) return;
+    /* hysteresis: the incumbent keeps the eye until the challenger clearly
+       owns the screen, or the incumbent has essentially left it */
+    var curCov = stationCoverage(station);
+    if (bestCov > curCov + 0.08 || curCov < 0.04) {
+      station = best;
+      var dest = stationTarget(station);
+      var wp2 = screenToWorld(dest.cx, dest.cy, EZ + 26);
+      glancePt = wp2; glanceUntil = performance.now() + 220;   /* look where you're going */
+      travelUntil = performance.now() + 900;                    /* dart mode */
+      if (Math.random() < 0.75) blink();                        /* gaze-evoked blink */
+    }
   }
 
   var EZ = 14; /* eye depth plane (world z) */
@@ -637,7 +666,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     renderer.setSize(innerWidth, innerHeight, false);
   });
 
-  var rafId = 0;
+  var rafId = 0, bootInit = false;
   function raf() { if (!rafId) rafId = requestAnimationFrame(frame); }
   var targetQ = new THREE.Quaternion(), tmpO = new THREE.Object3D();
 
@@ -654,13 +683,22 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     camera.position.set(camX.p, camY.p, 70);
     camera.lookAt(nx * 9, 1 - ny * 4 - sp * 6, -70);
 
-    /* eye placement: screen targets -> world via the current camera */
-    var st = eyeScreenTarget();
-    if (st) {
-      var wp = screenToWorld(st.cx, st.cy, EZ);
-      var wpr = screenToWorld(st.cx + st.px / 2, st.cy, EZ);
-      var worldHalf = wpr.distanceTo(wp);
-      sx.t = wp.x; sy.t = wp.y; ss.t = worldHalf / 3.0; /* assembly half-width ~3.0 units */
+    /* eye placement: the current station's point -> world via the camera */
+    pickStation();
+    var st = stationTarget(station);
+    var wp = screenToWorld(st.cx, st.cy, EZ);
+    var wpr = screenToWorld(st.cx + st.px / 2, st.cy, EZ);
+    sx.t = wp.x; sy.t = wp.y; ss.t = wpr.distanceTo(wp) / 3.0; /* assembly half-width ~3.0 units */
+    if (!bootInit) { bootInit = true; sx.p = sx.t; sy.p = sy.t; ss.p = ss.t; }
+    var darting = now < travelUntil;
+    if (darting) { /* committed flight: stiff, a hint of overshoot */
+      sx.k = 70; sx.c = 2 * Math.sqrt(70) * 0.78;
+      sy.k = 84; sy.c = 2 * Math.sqrt(84) * 0.86;
+      ss.k = 60; ss.c = 2 * Math.sqrt(60) * 1.0;
+    } else {       /* hold: lazy, softly riding the card */
+      sx.k = 10; sx.c = 2 * Math.sqrt(10) * 0.95;
+      sy.k = 14; sy.c = 2 * Math.sqrt(14) * 0.95;
+      ss.k = 16; ss.c = 2 * Math.sqrt(16) * 1.0;
     }
     stepSpring(sx, dt); stepSpring(sy, dt); stepSpring(ss, dt);
     var bobY = Math.sin(tSec * (2 * Math.PI / 7.5)) * 0.35;
@@ -668,16 +706,22 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     var sc = Math.max(0.05, ss.p);
     eyeGroup.scale.setScalar(sc);
 
-    /* gaze: face the cursor (or the saccade point), damped */
-    var lookPt = screenToWorld(
-      Math.max(0, Math.min(innerWidth, px + lookOffset.x)),
-      Math.max(0, Math.min(innerHeight, py + lookOffset.y)),
-      EZ + 26
-    );
+    /* gaze: face the cursor (or the saccade point), damped; during the
+       pre-dart glance the eye looks at where it is about to go */
+    var lookPt;
+    if (glancePt && now < glanceUntil) {
+      lookPt = glancePt;
+    } else {
+      lookPt = screenToWorld(
+        Math.max(0, Math.min(innerWidth, px + lookOffset.x)),
+        Math.max(0, Math.min(innerHeight, py + lookOffset.y)),
+        EZ + 26
+      );
+    }
     tmpO.position.copy(eyeGroup.position);
     tmpO.lookAt(lookPt);
     targetQ.copy(tmpO.quaternion);
-    eyeGroup.quaternion.slerp(targetQ, 0.055);
+    eyeGroup.quaternion.slerp(targetQ, (glancePt && now < glanceUntil) ? 0.16 : 0.055);
 
     /* iris spin */
     iris.rotation.z += 0.000436 * (dt * 60);
@@ -715,6 +759,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     blinkCount: function () { return blinkCount; },
     spin: function () { return iris.rotation.z; },
     shut: function () { return shutTop.scale.y; },
+    station: function () { return { kind: station.kind, idx: station.idx }; },
   };
 
   frame(performance.now());
