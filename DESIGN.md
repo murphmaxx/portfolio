@@ -24,9 +24,9 @@ No neon, purple, cyan, pills, glows, or playful color fields. Signal orange is r
 
 ## Background
 
-The field is a real render v2: `site/assets/field-render.jpg`, a seeded deterministic three.js scene — two ridge systems framing a valley that opens to a warm horizon, elevation-graded wireframe (crests bright steel, floors dark), soft round dust motes with signal embers, survey posts. Generator archived at `motion/render-field-generator.html`; re-render via headless Chromium at 2560×1440. The old CSS mesh/trace/marker field and `motion/field-background.*` are retired.
+**The field is live** (basement.studio direction, 2026-08-31): a three.js world rendered in-page on a fixed canvas behind the document — the v2 valley terrain (ridged noise, elevation-graded wireframe, horizon glow, drifting motes, survey posts) and the machined 3D eye as a real object floating over it. The camera parallaxes with the cursor (springs, ±7 world units) and dollies gently with scroll: the page is a place.
 
-Above the terrain sits the Eye v2 — pure 3D, no flourishes (the Ra teardrop, tail strokes, reticle, brow, lashes, and the specular glint are all gone). Two passes from one camera (`motion/render-eye-generator.html`): `site/assets/eye-frame.png` (thick machined lid tubes with groove lines, canthus caps with signal dots, concave lathe socket bowl, housing ring) and `site/assets/eye-iris.png` (domed 64-blade turbine in a barrel, orange pupil rim, glow ring, graduations). Both PNGs overlay at identical full size, pixel-aligned.
+Fallback: the pre-rendered stills remain in the DOM (`site/assets/field-render.jpg` + the two eye PNGs with all their CSS-var behaviors) and are what mobile, coarse pointers, ≤900px, and no-WebGL browsers get. When the scene boots it adds `.live` to `.field`, hiding the static layers. Generators stay archived in `motion/` — the scene code is the same geometry, kept in sync by hand.
 
 ## Composition
 
@@ -34,15 +34,12 @@ The hero is tall; its rendered field stays fixed while the document scrolls. Pro
 
 ## Motion grammar
 
-- Card tilt is the keel/Codrops TiltFx model: the outer `.project-box` never rotates — it owns layout offset, scroll shift, perspective, and the pointer listeners, so hit geometry stays stable; the inner `.record` rotates (±6° X, ±10° Y). The pointer sets a linear target; the card glides toward it (lerp 0.16/frame, ~200 ms settle) so crossing an edge never snaps, then tracks 1:1.
-- Inner planes (`.project-info`, `.project-data`, `.media-field`) drift a few px in 2D against the tilt so the record comes apart in depth. No translateZ on children.
-- Release is a JS elastic tween (~900 ms) back to flat. No CSS transition on transform anywhere in that pipeline.
-- Scroll writes only `--shift` (cards) and `--bg-y`/`--bg-scale` (render drift); the tilt handler writes only `--rx/--ry/--px/--py`.
-- The Eye's iris follows the cursor anywhere on the page: direction is the vector from the eye's center to the pointer, deflection saturates ~420px out, travel ≤3.2% of the eye box plus ≤9°/7° swivel, gliding at 0.06/frame (heavier than the cards — it is an eyeball). The frame layer never moves; scroll drifts the whole eye slower than the terrain.
-- Idle life: after ~3.5s without pointer movement the eye saccades to a random nearby point every 2.6–5.2s (runs on touch devices too); the iris rotates once every 4 minutes (CSS `iris-spin`); the whole eye bobs ±7px over 7.5s (CSS `eye-bob` on `.eye-inner`).
-- Blink: real lids — the top lid does most of the travel (64%/42% heights), close .08s ease-in, open .16s ease-out, held ~140ms, at a random 4–9s cadence with a 22% double-blink. Layer order inside `.eye-inner`: frame img → `.iris-gaze` (cursor transform) → iris img (spin) → `.lids`.
-- Scroll-weave: the eye rides the open space beside the passing card. Each card's larger side gap (measured from its live rect — never a static table; `.stage-heading` shifts nth-of-type indices) is the target: the eye centers in that gap at the card's height, scaled to fit it (clamped 0.24–0.62, always fully on-screen), blended by squared card-proximity weights with the hero pulling toward the home spot. Deterministic and scroll-linked; desktop only (>900px).
-- Coarse pointers and reduced motion get no tilt and a centered gaze; reduced motion starts with the motion toggle off.
+- Camera: cursor parallax + scroll dolly, spring-damped (k=14, zeta=0.9). Every layer of the world shifts perspective together — this, not any single effect, is the basement feel.
+- Card tilt (DOM, unchanged): keel/Codrops split, glide 0.16/frame, elastic release.
+- The eye is a scene object. Position/scale ride springs (x k=22 zeta=0.80, y k=30 zeta=0.85, scale critically damped) toward screen-space targets computed by the same gap logic as the fallback: hero home upper-right; past the hero it weaves into each passing card's larger side gap, at the card's height, sized to fit, clamped on-screen. Underdamped x vs y gives curved, organic travel.
+- Gaze: the whole eye assembly rotates toward the cursor's world point (quaternion slerp 0.055/frame). Idle saccades offset the look target on a 2.6–5.2s clock after 3.5s of pointer stillness. Iris revolves once per ~4 minutes; the eye bobs ±0.35 units on a 7.5s sine.
+- Blink: two half-disc shutters in front of the socket; close 80ms, hold 110ms, open 170ms; random 4–9s cadence, 22% double.
+- Motion off / reduced motion: the main script broadcasts a `motionchange` event; the scene freezes on a clean frame and idle clocks skip. The DOM fallback keeps its own identical behavior set for non-live contexts.
 
 ## Controls
 

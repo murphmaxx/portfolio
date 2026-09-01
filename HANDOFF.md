@@ -4,6 +4,15 @@ Updated 2026-08-31. Supersedes the previous handoff (the tilt bug, the retired C
 
 ## State
 
+**LIVE SCENE (2026-08-31, basement.studio direction):** the background is now an in-page three.js world (terrain + 3D eye + cursor-parallax camera), not a static render. The user explored basement.studio ("the site is a place") and asked for that mechanism. Key architecture:
+
+- Scene script sits BEFORE the main script in `site/index.html`, gated to desktop fine-pointer >900px + WebGL; on boot it sets `window.__sceneLive` and `.field.live` (hides static layers). Everything else (mobile/coarse/no-WebGL/JS-off) falls back to the pre-rendered stills + DOM eye behaviors, which are kept intact and guarded by `!window.__sceneLive`.
+- The main script broadcasts motion toggles via a `motionchange` CustomEvent; the scene listens (initial state synced because setMotion always fires once at load).
+- Eye targets are computed in screen space (same gap-weave logic as the DOM fallback) then unprojected onto the eye's depth plane (z=14) through the CURRENT parallaxed camera each frame; springs smooth world position/scale (underdamped x vs y = curved organic travel — the user asked for "more organic").
+- Blink = two half-disc shutter meshes (scale.y state machine). Gaze = whole-assembly quaternion slerp toward the cursor ray. Iris spin/bob/saccades in-scene.
+- Debug/verification API: `window.__scene` — `eye()` (projected screen pos, scale, rotY/rotX), `cam()`, `blinkCount()`, `spin()`, `shut()`. The harness asserts against this, not CSS vars, in live mode.
+- Terrain/eye geometry duplicated from the archived generators in `motion/` — keep them in sync when art-directing.
+
 `site/index.html` is the whole site. As of this revision:
 
 - **Hero tagline:** “Systems that show their work.” (replaced “Controls for consequential AI.” at the user's request, 2026-08-31).
@@ -14,7 +23,7 @@ Updated 2026-08-31. Supersedes the previous handoff (the tilt bug, the retired C
 
 ## Verified 2026-08-31 (real browser, headless Chromium 152 via puppeteer-core)
 
-25/25 checks: load, flat at rest, eye layers load, gaze looks toward cursor on both sides + centers under motion-off, idle spin/bob animations running, idle saccades fire with no pointer input, randomized blink observed within its window, scroll-weave verified against real geometry (eye in the left gap at card 1, right gap at card 2, at card height, home at top), four corners at settled linear values (±5.64°/±9.4° at 3% inset), entry-glide/no-snap (2 frames after edge crossing = ~40% of settled tilt), full-body sweep incl. text and media areas, children translate-only (no text stretch), elastic return to 0 after leave, scroll-while-hovering preserves tilt and updates shift, motion toggle off/on, reduced-motion starts off, coarse pointer gets no tilt, no console errors. Screenshots reviewed at desktop and 390px mobile. Harness lived in the session job dir (not committed); it drove real `page.mouse.move` across card geometry and read back the CSS vars.
+25/25 checks (live-scene edition): load, flat at rest, eye layers load, gaze looks toward cursor on both sides + centers under motion-off, scene boots, camera parallax follows cursor (±5 world units), eye rotates bodily toward cursor, iris spins, idle saccades, blink shutters close fully, world-space scroll-weave (eye in the gaps at card height, home at top), scene freezes under motion-off, four corners at settled linear values (±5.64°/±9.4° at 3% inset), entry-glide/no-snap (2 frames after edge crossing = ~40% of settled tilt), full-body sweep incl. text and media areas, children translate-only (no text stretch), elastic return to 0 after leave, scroll-while-hovering preserves tilt and updates shift, motion toggle off/on, reduced-motion starts off, coarse pointer gets no tilt, no console errors. Screenshots reviewed at desktop and 390px mobile. Harness lived in the session job dir (not committed); it drove real `page.mouse.move` across card geometry and read back the CSS vars.
 
 ## Preview
 

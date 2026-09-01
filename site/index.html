@@ -68,6 +68,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 /* Persistent rendered field. The render is the only background layer;
    scroll drifts it slowly and a fixed vignette holds the edges. */
 .field{position:fixed;z-index:0;inset:0;overflow:hidden;background:var(--carbon);pointer-events:none}
+.field #scene{position:absolute;inset:0;width:100%;height:100%;display:none}
+.field.live #scene{display:block}
+.field.live .render,.field.live .eye{display:none}
 .field .render{position:absolute;inset:-7% -4%;width:108%;height:114%;object-fit:cover;object-position:50% 38%;transform:translate3d(0,var(--bg-y,0px),0) scale(var(--bg-scale,1));transition:transform .12s linear}
 .field .vig{position:absolute;inset:0;background:radial-gradient(120% 100% at 50% 42%,transparent 42%,#0a0c0e66 74%,#0a0c0ecc 100%)}
 /* The Eye: two renders from one camera. The frame (lids, socket, Ra marks,
@@ -236,6 +239,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
 </header>
 
 <div class="field" aria-hidden="true">
+  <canvas id="scene"></canvas>
   <img class="render" src="assets/field-render.jpg" alt="" decoding="async">
   <div class="eye">
     <div class="eye-inner">
@@ -332,6 +336,376 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
 <footer class="footer"><span>Technical portfolio / field prototype</span><span>Evidence before assertion</span></footer>
 <button class="motion-control" id="motionControl" type="button" aria-pressed="false">Motion: on</button>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============================================================
+   LIVE FIELD — the page is a place (basement.studio direction).
+   One three.js world: the machined terrain and the 3D eye, with a
+   cursor-parallax camera. The pre-rendered layers remain as the
+   fallback (no WebGL, mobile, coarse pointers).
+   ============================================================ */
+(function () {
+  if (!window.THREE) return;
+  if (innerWidth <= 900 || matchMedia('(pointer: coarse)').matches) return;
+  var canvas = document.getElementById('scene');
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+  } catch (e) { return; }
+  window.__sceneLive = true;
+  document.querySelector('.field').classList.add('live');
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+  renderer.setSize(innerWidth, innerHeight, false);
+
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0c0e);
+  scene.fog = new THREE.FogExp2(0x0a0c0e, 0.0082);
+  var camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 700);
+
+  /* ---- deterministic noise (same seed family as the archived generators) ---- */
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  var rand = mulberry32(2209);
+  var P = new Array(512); for (var pi = 0; pi < 512; pi++) P[pi] = rand();
+  function vnoise(x, y) {
+    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+    function sm(a, b) { return P[(((a & 255) * 97 + (b & 255) * 57) | 0) & 511]; }
+    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+    return sm(xi, yi) * (1 - u) * (1 - v) + sm(xi + 1, yi) * u * (1 - v) + sm(xi, yi + 1) * (1 - u) * v + sm(xi + 1, yi + 1) * u * v;
+  }
+  function fbm(x, y) { var a = 0, amp = .5, f = 1; for (var o = 0; o < 5; o++) { a += amp * vnoise(x * f, y * f); amp *= .5; f *= 2.1; } return a; }
+  function ridged(x, y) { var a = 0, amp = .55, f = 1; for (var o = 0; o < 5; o++) { var n = 1 - Math.abs(vnoise(x * f, y * f) * 2 - 1); a += amp * n * n; amp *= .5; f *= 2.05; } return a; }
+
+  /* ---- terrain (v2 valley) ---- */
+  function height(x, z) {
+    var wall = Math.pow(Math.min(1, Math.abs(x) / 110), 1.6) * 26;
+    var h = ridged(x * 0.013 + 7.1, z * 0.013 + 3.9) * 20 - 6;
+    h += fbm(x * 0.05 + 1.3, z * 0.05 + 8.8) * 4 - 2;
+    h = h * 0.55 + wall * (0.55 + ridged(x * 0.02 + 2.2, z * 0.02) * 0.45);
+    var d = Math.sqrt(Math.pow(x * 0.75, 2) + Math.pow((z - 62) * 1.5, 2));
+    h *= Math.min(1, Math.max(.10, (d - 14) / 85));
+    return h;
+  }
+  var geo = new THREE.PlaneGeometry(420, 260, 300, 190);
+  geo.rotateX(-Math.PI / 2);
+  var pos = geo.attributes.position, hmin = 1e9, hmax = -1e9;
+  for (var i = 0; i < pos.count; i++) {
+    var h = height(pos.getX(i), pos.getZ(i));
+    pos.setY(i, h); if (h < hmin) hmin = h; if (h > hmax) hmax = h;
+  }
+  geo.computeVertexNormals();
+  scene.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x14191f, metalness: 0.5, roughness: 0.66, flatShading: true })));
+  var wgeo = geo.clone();
+  var cols = new Float32Array(wgeo.attributes.position.count * 3);
+  var lo = new THREE.Color(0x1c2228), hi = new THREE.Color(0x5f6d7a);
+  for (var wi = 0; wi < wgeo.attributes.position.count; wi++) {
+    var t = Math.pow((wgeo.attributes.position.getY(wi) - hmin) / (hmax - hmin), 1.35);
+    var c = lo.clone().lerp(hi, t);
+    cols[wi * 3] = c.r; cols[wi * 3 + 1] = c.g; cols[wi * 3 + 2] = c.b;
+  }
+  wgeo.setAttribute('color', new THREE.BufferAttribute(cols, 3));
+  var wire = new THREE.Mesh(wgeo, new THREE.MeshBasicMaterial({ vertexColors: true, wireframe: true, transparent: true, opacity: 0.34 }));
+  wire.position.y = 0.22;
+  scene.add(wire);
+
+  /* ---- horizon glow ---- */
+  var cv = document.createElement('canvas'); cv.width = cv.height = 256;
+  var cctx = cv.getContext('2d');
+  var g = cctx.createRadialGradient(128, 128, 4, 128, 128, 128);
+  g.addColorStop(0, 'rgba(213,128,66,0.55)'); g.addColorStop(0.35, 'rgba(178,98,48,0.22)'); g.addColorStop(1, 'rgba(178,98,48,0)');
+  cctx.fillStyle = g; cctx.fillRect(0, 0, 256, 256);
+  var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false }));
+  spr.position.set(-6, 10, -215); spr.scale.set(210, 115, 1);
+  scene.add(spr);
+
+  /* ---- lights ---- */
+  scene.add(new THREE.HemisphereLight(0x36404b, 0x06080b, 0.75));
+  var rake = new THREE.DirectionalLight(0xd58042, 1.5); rake.position.set(-150, 55, -120); scene.add(rake);
+  var back = new THREE.DirectionalLight(0xc97435, 0.55); back.position.set(0, 26, -200); scene.add(back);
+  var fill = new THREE.DirectionalLight(0x54626f, 0.7); fill.position.set(120, 60, 40); scene.add(fill);
+
+  /* ---- motes ---- */
+  var mn = 210, mpts = new Float32Array(mn * 3), mcols = new Float32Array(mn * 3);
+  var steel = new THREE.Color(0x6a7683), ember = new THREE.Color(0xd58042);
+  for (var mi = 0; mi < mn; mi++) {
+    mpts[mi * 3] = (rand() * 2 - 1) * 180; mpts[mi * 3 + 1] = 2 + rand() * 46; mpts[mi * 3 + 2] = 30 - rand() * 220;
+    var mc = rand() < 0.16 ? ember : steel;
+    mcols[mi * 3] = mc.r; mcols[mi * 3 + 1] = mc.g; mcols[mi * 3 + 2] = mc.b;
+  }
+  var mg = new THREE.BufferGeometry();
+  mg.setAttribute('position', new THREE.BufferAttribute(mpts, 3));
+  mg.setAttribute('color', new THREE.BufferAttribute(mcols, 3));
+  var dot = document.createElement('canvas'); dot.width = dot.height = 64;
+  var dctx = dot.getContext('2d');
+  var dg = dctx.createRadialGradient(32, 32, 2, 32, 32, 32);
+  dg.addColorStop(0, 'rgba(255,255,255,1)'); dg.addColorStop(0.5, 'rgba(255,255,255,.4)'); dg.addColorStop(1, 'rgba(255,255,255,0)');
+  dctx.fillStyle = dg; dctx.fillRect(0, 0, 64, 64);
+  var motes = new THREE.Points(mg, new THREE.PointsMaterial({ size: 2.2, map: new THREE.CanvasTexture(dot), vertexColors: true, transparent: true, opacity: 0.55, depthWrite: false }));
+  scene.add(motes);
+
+  /* ---- survey posts ---- */
+  var postMat = new THREE.MeshBasicMaterial({ color: 0xd98b4a });
+  [[-92, -70], [-58, -130], [64, -95], [104, -45], [-30, -38]].forEach(function (pz) {
+    var h = height(pz[0], pz[1]);
+    var post = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 8, 6), postMat);
+    post.position.set(pz[0], h + 4, pz[1]); scene.add(post);
+    var tip = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 10), postMat);
+    tip.position.set(pz[0], h + 8.4, pz[1]); scene.add(tip);
+  });
+
+  /* ---- the eye (v2 assembly, built at unit scale ~3.7 half-height) ---- */
+  var eyeGroup = new THREE.Group();
+  var mat = {
+    lid: new THREE.MeshStandardMaterial({ color: 0x2b333c, metalness: 0.75, roughness: 0.32 }),
+    groove: new THREE.MeshBasicMaterial({ color: 0x46525c }),
+    bowl: new THREE.MeshStandardMaterial({ color: 0x0c1014, metalness: 0.35, roughness: 0.8, side: THREE.DoubleSide }),
+    barrel: new THREE.MeshStandardMaterial({ color: 0x232b33, metalness: 0.7, roughness: 0.4, flatShading: true }),
+    blade: new THREE.MeshStandardMaterial({ color: 0x3a444f, metalness: 0.7, roughness: 0.35, flatShading: true }),
+    signal: new THREE.MeshBasicMaterial({ color: 0xc97435 }),
+    signal2: new THREE.MeshBasicMaterial({ color: 0xe0965a }),
+    shutter: new THREE.MeshBasicMaterial({ color: 0x0d1013 }),
+  };
+  function lidCurve(w, bulge, segs) {
+    var R = (w * w + bulge * bulge) / (2 * bulge), cy = bulge - R, a = Math.asin(w / R), pts = [];
+    for (var li = 0; li <= segs; li++) {
+      var lt = -a + (2 * a) * (li / segs);
+      pts.push(new THREE.Vector3(R * Math.sin(lt), cy + R * Math.cos(lt), 0));
+    }
+    return new THREE.CatmullRomCurve3(pts);
+  }
+  function lidTube(w, bulge, r, m, flipY) {
+    var mesh = new THREE.Mesh(new THREE.TubeGeometry(lidCurve(w, bulge, 60), 90, r, 12), m);
+    if (flipY) mesh.scale.y = -1;
+    return mesh;
+  }
+  var EW = 2.85;
+  eyeGroup.add(lidTube(EW, 1.62, 0.075, mat.lid, false));
+  eyeGroup.add(lidTube(EW, 1.30, 0.075, mat.lid, true));
+  eyeGroup.add(lidTube(EW * 0.985, 1.545, 0.010, mat.groove, false));
+  eyeGroup.add(lidTube(EW * 0.985, 1.235, 0.010, mat.groove, true));
+  [-1, 1].forEach(function (sx) {
+    var cap = new THREE.Mesh(new THREE.SphereGeometry(0.115, 18, 18), mat.lid);
+    cap.position.set(sx * EW, 0, 0); eyeGroup.add(cap);
+    var d2 = new THREE.Mesh(new THREE.SphereGeometry(0.032, 10, 10), mat.signal2);
+    d2.position.set(sx * (EW + 0.02), 0, 0.10); eyeGroup.add(d2);
+  });
+  var prof = [];
+  for (var bi = 0; bi <= 24; bi++) {
+    var bt = bi / 24;
+    prof.push(new THREE.Vector2(1.30 * bt, -0.62 * (1 - bt * bt)));
+  }
+  var bowl = new THREE.Mesh(new THREE.LatheGeometry(prof, 84), mat.bowl);
+  bowl.rotation.x = Math.PI / 2;
+  eyeGroup.add(bowl);
+  eyeGroup.add(new THREE.Mesh(new THREE.TorusGeometry(1.30, 0.045, 10, 96), mat.barrel));
+
+  var iris = new THREE.Group();
+  var wall2 = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.34, 72, 1, true), mat.barrel);
+  wall2.rotation.x = Math.PI / 2; wall2.position.z = -0.05; iris.add(wall2);
+  var pupil = new THREE.Mesh(new THREE.CircleGeometry(0.30, 64), new THREE.MeshBasicMaterial({ color: 0x07080a }));
+  pupil.position.z = 0.02; iris.add(pupil);
+  var prim = new THREE.Mesh(new THREE.TorusGeometry(0.325, 0.020, 10, 72), mat.signal2);
+  prim.position.z = 0.06; iris.add(prim);
+  for (var ii = 0; ii < 64; ii++) {
+    var ang = (ii / 64) * Math.PI * 2, orange = ii % 8 === 0;
+    var blade = new THREE.Mesh(new THREE.BoxGeometry(orange ? 0.34 : 0.42, orange ? 0.017 : 0.015, 0.014), orange ? mat.signal : mat.blade);
+    blade.position.set(Math.cos(ang) * 0.67, Math.sin(ang) * 0.67, -0.06);
+    blade.rotation.z = ang;
+    blade.rotation.y = Math.cos(ang) * -0.38;
+    blade.rotation.x = Math.sin(ang) * 0.38;
+    iris.add(blade);
+  }
+  var ri1 = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.010, 8, 96), mat.groove); iris.add(ri1);
+  var ro1 = new THREE.Mesh(new THREE.TorusGeometry(0.90, 0.012, 8, 96), mat.groove); ro1.position.z = -0.10; iris.add(ro1);
+  var rim2 = new THREE.Mesh(new THREE.TorusGeometry(1.00, 0.055, 10, 96), mat.barrel); rim2.position.z = 0.10; iris.add(rim2);
+  var glow2 = new THREE.Mesh(new THREE.TorusGeometry(1.05, 0.010, 8, 96), mat.signal); glow2.position.z = 0.13; iris.add(glow2);
+  for (var ti = 0; ti < 24; ti++) {
+    var ta = (ti / 24) * Math.PI * 2;
+    var tick = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.011, 0.011), ti % 2 ? mat.groove : mat.signal2);
+    tick.position.set(Math.cos(ta) * 1.0, Math.sin(ta) * 1.0, 0.155);
+    tick.rotation.z = ta; iris.add(tick);
+  }
+  eyeGroup.add(iris);
+
+  /* blink shutters: two half-discs just in front of the socket */
+  var shutTop = new THREE.Mesh(new THREE.CircleGeometry(1.24, 48, 0, Math.PI), mat.shutter);
+  var shutBot = new THREE.Mesh(new THREE.CircleGeometry(1.24, 48, Math.PI, Math.PI), mat.shutter);
+  shutTop.position.z = shutBot.position.z = 0.30;
+  shutTop.scale.y = shutBot.scale.y = 0.001;
+  shutTop.visible = shutBot.visible = false;
+  eyeGroup.add(shutTop); eyeGroup.add(shutBot);
+
+  scene.add(eyeGroup);
+
+  /* ============ behavior state ============ */
+  var off = document.documentElement.classList.contains('motion-off');
+  var px = innerWidth * 0.7, py = innerHeight * 0.4, lastMove = 0;
+  var blinkPhase = 0, blinkT = 0, blinkCount = 0; /* 0 idle, 1 closing, 2 hold, 3 opening */
+  var lookOffset = { x: 0, y: 0 };  /* saccade offset in screen px */
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('.project-box'));
+  var t0 = performance.now();
+
+  function spring(k, zeta) { return { p: 0, v: 0, t: 0, k: k, c: 2 * Math.sqrt(k) * zeta }; }
+  var sx = spring(22, 0.80), sy = spring(30, 0.85), ss = spring(26, 1.0);
+  var camX = spring(14, 0.9), camY = spring(14, 0.9);
+  function stepSpring(o, dt) {
+    var a = o.k * (o.t - o.p) - o.c * o.v;
+    o.v += a * dt; o.p += o.v * dt;
+  }
+
+  addEventListener('pointermove', function (e) {
+    px = e.clientX; py = e.clientY; lastMove = performance.now();
+  }, { passive: true });
+
+  /* screen-space eye targets: same gap logic as the DOM fallback */
+  function eyeScreenTarget() {
+    var W = Math.min(innerWidth * 0.46, 740);
+    var homeCx = innerWidth - innerWidth * 0.02 - W / 2, homeCy = innerHeight * 0.08 + W / 2;
+    var wh = Math.max(0, 1 - scrollY / (innerHeight * 0.8)); wh *= wh;
+    var sum = wh, cxA = wh * homeCx, cyA = wh * homeCy, sA = wh * W;
+    boxes.forEach(function (box) {
+      var r = box.getBoundingClientRect();
+      var w = Math.max(0, 1 - Math.abs(r.top + r.height / 2 - innerHeight / 2) / (innerHeight * 0.55));
+      w *= w; if (!w) return;
+      var gapL = Math.max(0, r.left), gapR = Math.max(0, innerWidth - r.right);
+      var left = gapL >= gapR, gw = left ? gapL : gapR;
+      cxA += w * (left ? gapL / 2 : r.right + gapR / 2);
+      cyA += w * Math.min(innerHeight * 0.72, Math.max(innerHeight * 0.20, r.top + r.height / 2));
+      sA += w * Math.max(W * 0.24, Math.min(W * 0.62, gw * 0.85));
+      sum += w;
+    });
+    if (sum < 0.02) return null;
+    var pxSize = sA / sum, half = pxSize / 2 + 8;
+    return {
+      cx: Math.min(innerWidth - half, Math.max(half, cxA / sum)),
+      cy: cyA / sum,
+      px: pxSize,
+    };
+  }
+
+  var EZ = 14; /* eye depth plane (world z) */
+  function screenToWorld(sx2, sy2, zPlane) {
+    var v = new THREE.Vector3((sx2 / innerWidth) * 2 - 1, -(sy2 / innerHeight) * 2 + 1, 0.5).unproject(camera);
+    var dir = v.sub(camera.position).normalize();
+    var tt = (zPlane - camera.position.z) / dir.z;
+    return camera.position.clone().add(dir.multiplyScalar(tt));
+  }
+
+  /* saccades + blinks on their own randomized clocks */
+  (function wander() {
+    setTimeout(function () {
+      if (!off && performance.now() - lastMove > 3500) {
+        lookOffset.x = (0.15 + Math.random() * 0.4) * (Math.random() < 0.5 ? -1 : 1) * innerWidth * 0.3;
+        lookOffset.y = (0.10 + Math.random() * 0.3) * (Math.random() < 0.5 ? -1 : 1) * innerHeight * 0.3;
+      } else { lookOffset.x = lookOffset.y = 0; }
+      wander();
+    }, 2600 + Math.random() * 2600);
+  })();
+  function blink() { if (blinkPhase === 0) { blinkPhase = 1; blinkT = 0; blinkCount++; } }
+  (function blinkLoop() {
+    setTimeout(function () {
+      if (!off) { blink(); if (Math.random() < 0.22) setTimeout(blink, 430); }
+      blinkLoop();
+    }, 4000 + Math.random() * 5000);
+  })();
+
+  addEventListener('motionchange', function (e) {
+    off = e.detail.off;
+    if (off) {
+      sx.v = sy.v = ss.v = camX.v = camY.v = 0;
+      renderer.render(scene, camera); /* freeze on a clean frame */
+    } else {
+      raf();
+    }
+  });
+  addEventListener('resize', function () {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight, false);
+  });
+
+  var rafId = 0;
+  function raf() { if (!rafId) rafId = requestAnimationFrame(frame); }
+  var targetQ = new THREE.Quaternion(), tmpO = new THREE.Object3D();
+
+  function frame(now) {
+    rafId = 0;
+    var dt = 1 / 60;
+    var tSec = (now - t0) / 1000;
+
+    /* camera: cursor parallax + slight scroll dolly */
+    var nx = (px / innerWidth) * 2 - 1, ny = (py / innerHeight) * 2 - 1;
+    var sp = Math.min(1, scrollY / Math.max(1, document.body.scrollHeight - innerHeight));
+    camX.t = nx * 7; camY.t = 19 - ny * 3.5 - sp * 5;
+    stepSpring(camX, dt); stepSpring(camY, dt);
+    camera.position.set(camX.p, camY.p, 70);
+    camera.lookAt(nx * 9, 1 - ny * 4 - sp * 6, -70);
+
+    /* eye placement: screen targets -> world via the current camera */
+    var st = eyeScreenTarget();
+    if (st) {
+      var wp = screenToWorld(st.cx, st.cy, EZ);
+      var wpr = screenToWorld(st.cx + st.px / 2, st.cy, EZ);
+      var worldHalf = wpr.distanceTo(wp);
+      sx.t = wp.x; sy.t = wp.y; ss.t = worldHalf / 3.0; /* assembly half-width ~3.0 units */
+    }
+    stepSpring(sx, dt); stepSpring(sy, dt); stepSpring(ss, dt);
+    var bobY = Math.sin(tSec * (2 * Math.PI / 7.5)) * 0.35;
+    eyeGroup.position.set(sx.p, sy.p + bobY, EZ);
+    var sc = Math.max(0.05, ss.p);
+    eyeGroup.scale.setScalar(sc);
+
+    /* gaze: face the cursor (or the saccade point), damped */
+    var lookPt = screenToWorld(
+      Math.max(0, Math.min(innerWidth, px + lookOffset.x)),
+      Math.max(0, Math.min(innerHeight, py + lookOffset.y)),
+      EZ + 26
+    );
+    tmpO.position.copy(eyeGroup.position);
+    tmpO.lookAt(lookPt);
+    targetQ.copy(tmpO.quaternion);
+    eyeGroup.quaternion.slerp(targetQ, 0.055);
+
+    /* iris spin */
+    iris.rotation.z += 0.000436 * (dt * 60);
+
+    /* blink state machine (fast close, hold, slower open) */
+    if (blinkPhase) {
+      blinkT += dt * 1000;
+      var k;
+      if (blinkPhase === 1) { k = Math.min(1, blinkT / 80); if (k === 1) { blinkPhase = 2; blinkT = 0; } }
+      else if (blinkPhase === 2) { k = 1; if (blinkT > 110) { blinkPhase = 3; blinkT = 0; } }
+      else { k = 1 - Math.min(1, blinkT / 170); if (blinkT >= 170) { blinkPhase = 0; } }
+      shutTop.visible = shutBot.visible = k > 0.02;
+      shutTop.scale.y = Math.max(0.001, k);
+      shutBot.scale.y = Math.max(0.001, k);
+    }
+
+    /* motes drift */
+    motes.rotation.y = tSec * 0.004;
+
+    renderer.render(scene, camera);
+    if (!off && !document.hidden) raf();
+  }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && !off) raf(); });
+
+  /* debug handle for the verification harness */
+  window.__scene = {
+    eye: function () {
+      var v = eyeGroup.position.clone().project(camera);
+      return {
+        sx: (v.x + 1) / 2 * innerWidth, sy: (1 - v.y) / 2 * innerHeight,
+        scale: eyeGroup.scale.x, rotY: eyeGroup.rotation.y, rotX: eyeGroup.rotation.x,
+      };
+    },
+    cam: function () { return { x: camera.position.x, y: camera.position.y }; },
+    blinkCount: function () { return blinkCount; },
+    spin: function () { return iris.rotation.z; },
+    shut: function () { return shutTop.scale.y; },
+  };
+
+  if (!off) raf(); else { frame(performance.now()); }
+})();
+</script>
 <script>
 (function () {
   var root = document.documentElement;
@@ -365,7 +739,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       // Blended by card proximity to the viewport center; the hero pulls
       // toward the eye's home spot. Deterministic, scroll-linked. Desktop
       // only: mobile cards have no side gaps.
-      if (innerWidth > 900) {
+      if (innerWidth > 900 && !window.__sceneLive) {
         var W = eye.offsetWidth;
         var homeCx = eye.offsetLeft + W / 2, homeCy = eye.offsetTop + W / 2;
         var wh = Math.max(0, 1 - scrollY / (innerHeight * 0.8));
@@ -413,6 +787,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     root.classList.toggle('motion-off', v);
     control.setAttribute('aria-pressed', String(v));
     control.textContent = v ? 'Motion: off' : 'Motion: on';
+    dispatchEvent(new CustomEvent('motionchange', { detail: { off: v } }));
     if (v) {
       field.style.removeProperty('--bg-y');
       field.style.removeProperty('--bg-scale');
@@ -450,7 +825,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
      Both passes share one camera and canvas, so the iris img overlays the
      frame img at full size; travel is a small % of that shared box. */
   (function () {
-    if (!gazeEl) return;
+    if (!gazeEl || window.__sceneLive) return;
     var t = { x: 0, y: 0 };   // target, -1..1
     var g = { x: 0, y: 0 };   // current
     var raf = 0;
