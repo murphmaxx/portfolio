@@ -1365,34 +1365,25 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     },
   };
 
-  /* transcript replay, GIF-style LOOP: type the command, stream the REAL
-     captured transcript at terminal pace, hold on the full tail, restart.
-     Content is genuine output; only the pacing is synthesized. Motion-off
-     shows the fully-revealed tail, frozen. */
+  /* transcript replay: a REAL captured run, revealed by scroll progress.
+     Pure function of p — no time term — so equal scroll gives equal frames. */
   function replayDraw(rp) {
     var LH = 14, FS = 10, PADX = 18, PADY = 14;
-    var TYPE_S = 1.6, LPS = 8, HOLD = 3.2;
-    var STREAM_S = rp.lines.length / LPS;
-    var TOTAL = TYPE_S + STREAM_S + HOLD;
     function fit(x, txt, maxw) {
       if (x.measureText(txt).width <= maxw) return txt;
       var tail = txt.slice(-26), head = txt.slice(0, -26);
-      while (head.length > 8 && x.measureText(head + '…' + tail).width > maxw) head = head.slice(0, -4);
-      return head + '…' + tail;
+      while (head.length > 8 && x.measureText(head + '\u2026' + tail).width > maxw) head = head.slice(0, -4);
+      return head + '\u2026' + tail;
     }
-    return function (x, w, h, pp, tt) {
+    return function (x, w, h, pp) {
       frame(x, w, h);
       x.font = FS + 'px "DM Mono", monospace';
-      var t2 = off ? TYPE_S + STREAM_S : tt % TOTAL;
-      var typed = Math.min(rp.cmd.length, Math.floor(clamp01(t2 / TYPE_S) * (rp.cmd.length + 3)));
+      /* prompt line: the command types out over the first stretch */
+      var typed = Math.round(clamp01(pp / 0.07) * rp.cmd.length);
       x.fillStyle = SIG2; x.fillText('$ ', PADX, PADY + FS);
       x.fillStyle = WHT; x.fillText(rp.cmd.slice(0, typed), PADX + 14, PADY + FS);
-      if (!off && typed < rp.cmd.length && Math.floor(tt * 2.2) % 2 === 0) {
-        x.fillStyle = SIG;
-        x.fillRect(PADX + 14 + x.measureText(rp.cmd.slice(0, typed)).width + 2, PADY + 3, 7, FS);
-      }
       var rows = Math.max(4, Math.floor((h - PADY * 2 - LH * 2.6 - 34) / LH));
-      var n = t2 <= TYPE_S ? 0 : Math.min(rp.lines.length, Math.floor((t2 - TYPE_S) * LPS));
+      var n = Math.round(clamp01((pp - 0.09) / 0.72) * rp.lines.length);
       var start = Math.max(0, n - rows), y = PADY + LH * 2.1;
       for (var i = start; i < n; i++) {
         var cls = rp.lines[i][0], txt = rp.lines[i][1];
@@ -1405,8 +1396,8 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
         }
         y += LH;
       }
-      if (!off && n > 0 && n < rp.lines.length) {
-        x.fillStyle = SIG; x.fillRect(PADX, y + 3, 7, FS);   /* steady cursor while streaming */
+      if (n < rp.lines.length && typed === rp.cmd.length) {
+        x.fillStyle = SIG; x.fillRect(PADX, y + 3, 7, FS);   /* steady cursor */
       }
     };
   }
