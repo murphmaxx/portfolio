@@ -2,163 +2,162 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>eye render generator</title>
+<title>eye render v2 generator</title>
 <style>html,body{margin:0;height:100%;background:transparent;overflow:hidden}canvas{display:block}</style>
 </head>
 <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
-// Cyber Eye of Ra — two passes from one camera:
-//   frame: lids, socket, lashes, Ra marks, reticle — everything but the iris
-//   iris:  machined blade rings + pupil, rendered alone on transparency
+// Cyber eye v2 — pure 3D, no flourishes. Three passes from one camera:
+//   frame: thick machined lids + canthus caps + recessed socket bowl
+//   iris:  domed turbine iris in a barrel housing
+//   glint: static specular arcs (page layers them above the moving iris)
 const SIZE=1400;
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});
-renderer.setSize(SIZE,SIZE,false);
-renderer.setPixelRatio(1);
+renderer.setSize(SIZE,SIZE,false);renderer.setPixelRatio(1);
 renderer.setClearColor(0x000000,0);
 document.body.appendChild(renderer.domElement);
 
 const scene=new THREE.Scene();
-const HALF=3.7; // world half-height visible on the square canvas
+const HALF=3.7;
 const camera=new THREE.PerspectiveCamera(30,1,0.1,100);
 camera.position.set(0,0,HALF/Math.tan(THREE.Math.degToRad(15)));
 camera.lookAt(0,0,0);
 
-// palette
-const STEEL=0x46525c, STEEL_DIM=0x333c44, SIGNAL=0xc97435, SIGNAL_2=0xe0965a, DARK=0x0d1013;
-
-scene.add(new THREE.HemisphereLight(0x39434e,0x07090c,1.1));
-const rake=new THREE.DirectionalLight(0xd58042,2.6); rake.position.set(-30,8,18); scene.add(rake);
-const fill=new THREE.DirectionalLight(0x54626f,0.8); fill.position.set(25,12,20); scene.add(fill);
+// lights: warm key upper-left-front, steel fill right, faint under-rim
+scene.add(new THREE.HemisphereLight(0x39434e,0x07090c,0.9));
+const key=new THREE.DirectionalLight(0xd58042,2.2); key.position.set(-16,14,22); scene.add(key);
+const fill=new THREE.DirectionalLight(0x54626f,0.9); fill.position.set(18,4,20); scene.add(fill);
+const under=new THREE.DirectionalLight(0x39434e,0.5); under.position.set(4,-16,14); scene.add(under);
 
 const mat={
-  steel:new THREE.MeshBasicMaterial({color:STEEL}),
-  steelDim:new THREE.MeshBasicMaterial({color:STEEL_DIM}),
-  signal:new THREE.MeshBasicMaterial({color:SIGNAL}),
-  signal2:new THREE.MeshBasicMaterial({color:SIGNAL_2}),
-  blade:new THREE.MeshBasicMaterial({color:0x3d4854}),
-  rim:new THREE.MeshStandardMaterial({color:0x252c33,metalness:0.7,roughness:0.45,flatShading:true}),
-  socket:new THREE.MeshBasicMaterial({color:DARK}),
+  lid:new THREE.MeshStandardMaterial({color:0x2b333c,metalness:0.75,roughness:0.32,flatShading:false}),
+  groove:new THREE.MeshBasicMaterial({color:0x46525c}),
+  bowl:new THREE.MeshStandardMaterial({color:0x0c1014,metalness:0.35,roughness:0.8,side:THREE.DoubleSide}),
+  barrel:new THREE.MeshStandardMaterial({color:0x232b33,metalness:0.7,roughness:0.4,flatShading:true}),
+  blade:new THREE.MeshStandardMaterial({color:0x3a444f,metalness:0.7,roughness:0.35,flatShading:true}),
+  signal:new THREE.MeshBasicMaterial({color:0xc97435}),
+  signal2:new THREE.MeshBasicMaterial({color:0xe0965a}),
 };
 
-function tube(points,r,m,closed){
-  const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)),!!closed);
-  return new THREE.Mesh(new THREE.TubeGeometry(curve,120,r,8,!!closed),m);
-}
-// lens-shaped lid arc: circle of radius R centered at (0,cy), spanning x in [-w,w]
-function lidArc(w,bulge,r,m){
-  const R=(w*w+bulge*bulge)/(2*bulge);
-  const cy=bulge-R; // arc peaks at y=bulge, ends at (±w,0)
-  const a=Math.asin(w/R);
-  const pts=[];
-  for(let i=0;i<=60;i++){
-    const t=-a+(2*a)*(i/60);
-    pts.push([R*Math.sin(t),cy+R*Math.cos(t),0]);
+function lidCurve(w,bulge,segs){
+  const R=(w*w+bulge*bulge)/(2*bulge), cy=bulge-R, a=Math.asin(w/R), pts=[];
+  for(let i=0;i<=segs;i++){
+    const t=-a+(2*a)*(i/segs);
+    pts.push(new THREE.Vector3(R*Math.sin(t),cy+R*Math.cos(t),0));
   }
-  return tube(pts,r,m);
+  return new THREE.CatmullRomCurve3(pts);
 }
-
-/* ============ FRAME GROUP ============ */
-const frame=new THREE.Group();
-
-// lids: asymmetric almond, doubled lines
-const W=2.85;
-frame.add(lidArc(W,1.62,0.020,mat.steel));                       // upper lid
-const lower=lidArc(W,1.30,0.020,mat.steel); lower.scale.y=-1; frame.add(lower);
-const up2=lidArc(W*0.94,1.46,0.009,mat.steelDim); up2.position.y=-0.02; frame.add(up2);
-const lo2=lidArc(W*0.94,1.16,0.009,mat.steelDim); lo2.scale.y=-1; lo2.position.y=0.02; frame.add(lo2);
-
-// socket: dark recessed disc + thin ring (iris sits over this)
-const socket=new THREE.Mesh(new THREE.CircleGeometry(1.16,72),mat.socket);
-socket.position.z=-0.05; frame.add(socket);
-const socketRing=new THREE.Mesh(new THREE.TorusGeometry(1.18,0.008,8,96),mat.steelDim);
-frame.add(socketRing);
-
-// lash ticks along the upper lid
-{
-  const R=(W*W+1.62*1.62)/(2*1.62), cy=1.62-R, a=Math.asin(W/R);
-  for(let i=1;i<=9;i++){
-    const t=-a+(2*a)*(i/10);
-    const x=R*Math.sin(t), y=cy+R*Math.cos(t);
-    const tick=new THREE.Mesh(new THREE.BoxGeometry(0.016,0.14,0.016),mat.steel);
-    tick.position.set(x,y+0.09,0);
-    tick.rotation.z=-Math.sin(t)*0.5;
-    frame.add(tick);
-  }
-}
-
-// Ra mark 1: teardrop descending from the inner (left) lower lid, ending in a curl
-frame.add(tube([[-1.05,-1.02,0],[-1.08,-1.9,0],[-1.12,-2.55,0],[-1.35,-2.92,0],[-1.68,-2.85,0],[-1.78,-2.55,0],[-1.60,-2.38,0]],0.016,mat.steel));
-const drop=new THREE.Mesh(new THREE.SphereGeometry(0.05,10,10),mat.signal);
-drop.position.set(-1.60,-2.38,0); frame.add(drop);
-
-// Ra mark 2: diagonal stroke sweeping down-right from the outer lower lid
-frame.add(tube([[1.35,-0.98,0],[1.95,-1.75,0],[2.45,-2.25,0]],0.016,mat.steel));
-frame.add(tube([[1.35,-0.98,0],[1.75,-1.85,0],[1.95,-2.45,0]],0.010,mat.steelDim));
-
-// brow: single slim arc above
-const brow=lidArc(W*1.02,1.55,0.012,mat.steelDim); brow.position.y=0.55; frame.add(brow);
-
-// HUD reticle: partial orange arcs + ticks orbiting the socket
-function arcRing(radius,thick,start,len,m,rz){
-  const g=new THREE.TorusGeometry(radius,thick,6,64,len);
-  const mesh=new THREE.Mesh(g,m); mesh.rotation.z=start; if(rz)mesh.rotation.z+=rz;
+function lidTube(w,bulge,r,m,flipY){
+  const c=lidCurve(w,bulge,60);
+  const mesh=new THREE.Mesh(new THREE.TubeGeometry(c,90,r,12),m);
+  if(flipY)mesh.scale.y=-1;
   return mesh;
 }
-frame.add(arcRing(1.34,0.010,2.35,1.15,mat.signal));
-frame.add(arcRing(1.34,0.010,-0.75,0.85,mat.signal));
-frame.add(arcRing(1.42,0.006,0.35,0.5,mat.steelDim));
-for(const ang of [0.1,1.05,2.6,3.6,4.5,5.4]){
-  const tick=new THREE.Mesh(new THREE.BoxGeometry(0.10,0.014,0.014),mat.steel);
-  tick.position.set(Math.cos(ang)*1.42,Math.sin(ang)*1.42,0);
-  tick.rotation.z=ang; frame.add(tick);
+
+/* ============ FRAME ============ */
+const frame=new THREE.Group();
+const W=2.85;
+
+// thick machined lids
+frame.add(lidTube(W,1.62,0.075,mat.lid,false));
+frame.add(lidTube(W,1.30,0.075,mat.lid,true));
+// machined groove lines riding the lids
+frame.add(lidTube(W*0.985,1.545,0.010,mat.groove,false));
+frame.add(lidTube(W*0.985,1.235,0.010,mat.groove,true));
+
+// canthus caps where the lids meet
+for(const sx of [-1,1]){
+  const cap=new THREE.Mesh(new THREE.SphereGeometry(0.115,18,18),mat.lid);
+  cap.position.set(sx*W,0,0);
+  frame.add(cap);
+  const dot=new THREE.Mesh(new THREE.SphereGeometry(0.032,10,10),mat.signal2);
+  dot.position.set(sx*(W+0.02),0,0.10);
+  frame.add(dot);
 }
+
+// recessed socket bowl: lathe profile, concave toward the viewer
+{
+  const prof=[];
+  for(let i=0;i<=24;i++){
+    const t=i/24;                     // 0 center -> 1 rim
+    const r=1.30*t;
+    const z=-0.62*(1-t*t);            // deepest at center
+    prof.push(new THREE.Vector2(r,z));
+  }
+  const bowl=new THREE.Mesh(new THREE.LatheGeometry(prof,84),mat.bowl);
+  bowl.rotation.x=Math.PI/2;          // lathe axis -> z, concave toward camera
+  frame.add(bowl);
+}
+// housing ring bridging bowl to lids
+const housing=new THREE.Mesh(new THREE.TorusGeometry(1.30,0.045,10,96),mat.barrel);
+frame.add(housing);
+
 scene.add(frame);
 
-/* ============ IRIS GROUP ============ */
+/* ============ IRIS ============ */
 const iris=new THREE.Group();
-const IRIS_R=1.05; // outer radius, world units — exported for page math
+const IRIS_R=1.05;
 
-// pupil: dark disc + orange rim, slightly proud of the blade plane
-const pupil=new THREE.Mesh(new THREE.CircleGeometry(0.33,64),new THREE.MeshBasicMaterial({color:0x08090b}));
-pupil.position.z=0.14; iris.add(pupil);
-const pupilRim=new THREE.Mesh(new THREE.TorusGeometry(0.355,0.014,8,72),mat.signal2);
-pupilRim.position.z=0.14; iris.add(pupilRim);
-const pupilRim2=new THREE.Mesh(new THREE.TorusGeometry(0.42,0.006,8,72),mat.steelDim);
-pupilRim2.position.z=0.12; iris.add(pupilRim2);
+// barrel wall: short cylinder, open toward viewer
+const wall=new THREE.Mesh(new THREE.CylinderGeometry(IRIS_R,IRIS_R,0.34,72,1,true),mat.barrel);
+wall.rotation.x=Math.PI/2;
+wall.position.z=-0.05;
+iris.add(wall);
 
-// machined blades: radial turbine segments, every 6th one signal orange
+// pupil: dark disc set deep + orange rim proud of it
+const pupil=new THREE.Mesh(new THREE.CircleGeometry(0.30,64),new THREE.MeshBasicMaterial({color:0x07080a}));
+pupil.position.z=0.02; iris.add(pupil);
+const pupilRim=new THREE.Mesh(new THREE.TorusGeometry(0.325,0.020,10,72),mat.signal2);
+pupilRim.position.z=0.06; iris.add(pupilRim);
+
+// domed turbine: blades climb from the rim toward the pupil
 for(let i=0;i<64;i++){
   const ang=(i/64)*Math.PI*2;
   const orange=i%8===0;
-  const blade=new THREE.Mesh(new THREE.BoxGeometry(orange?0.34:0.42,orange?0.016:0.014,0.012),orange?mat.signal:mat.blade);
-  const r=orange?0.72:0.68;
-  blade.position.set(Math.cos(ang)*r,Math.sin(ang)*r,0.05);
+  const len=orange?0.36:0.44;
+  const blade=new THREE.Mesh(new THREE.BoxGeometry(len,orange?0.017:0.015,0.014),orange?mat.signal:mat.blade);
+  const r=0.67;
+  blade.position.set(Math.cos(ang)*r,Math.sin(ang)*r,-0.06);
   blade.rotation.z=ang;
+  blade.rotation.y=Math.cos(ang)*-0.38;  // tilt toward center dome
+  blade.rotation.x=Math.sin(ang)*0.38;
   iris.add(blade);
 }
-// ring layers
-const r1=new THREE.Mesh(new THREE.TorusGeometry(0.55,0.008,8,96),mat.steelDim); r1.position.z=0.09; iris.add(r1);
-const r2=new THREE.Mesh(new THREE.TorusGeometry(0.93,0.007,8,96),mat.steelDim); r2.position.z=0.03; iris.add(r2);
-const rimOuter=new THREE.Mesh(new THREE.TorusGeometry(1.00,0.035,8,96),mat.rim); iris.add(rimOuter);
-const rimGlow=new THREE.Mesh(new THREE.TorusGeometry(IRIS_R,0.009,8,96),mat.signal); iris.add(rimGlow);
+// concentric rings on the dome
+const ri=new THREE.Mesh(new THREE.TorusGeometry(0.52,0.010,8,96),mat.groove); ri.position.z=0.0; iris.add(ri);
+const ro=new THREE.Mesh(new THREE.TorusGeometry(0.90,0.012,8,96),mat.groove); ro.position.z=-0.10; iris.add(ro);
+// outer rim ring + signal glow ring
+const rim=new THREE.Mesh(new THREE.TorusGeometry(1.00,0.055,10,96),mat.barrel); rim.position.z=0.10; iris.add(rim);
+const glow=new THREE.Mesh(new THREE.TorusGeometry(IRIS_R,0.010,8,96),mat.signal); glow.position.z=0.13; iris.add(glow);
 // rim graduations
 for(let i=0;i<24;i++){
   const ang=(i/24)*Math.PI*2;
-  const tick=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.010,0.010),i%2?mat.steel:mat.signal2);
-  tick.position.set(Math.cos(ang)*1.0,Math.sin(ang)*1.0,0.05);
-  tick.rotation.z=ang; iris.add(tick);
+  const tick=new THREE.Mesh(new THREE.BoxGeometry(0.05,0.011,0.011),i%2?mat.groove:mat.signal2);
+  tick.position.set(Math.cos(ang)*1.0,Math.sin(ang)*1.0,0.155);
+  tick.rotation.z=ang;iris.add(tick);
 }
 scene.add(iris);
 
-// pass control for the capture script
+/* ============ GLINT ============ */
+const glint=new THREE.Group();
+{
+  const g1=new THREE.Mesh(new THREE.TorusGeometry(0.62,0.018,8,64,0.9),new THREE.MeshBasicMaterial({color:0xf3e2cf,transparent:true,opacity:0.8}));
+  g1.rotation.z=1.85; g1.position.z=0.30; glint.add(g1);
+  const g2=new THREE.Mesh(new THREE.TorusGeometry(0.50,0.010,8,64,0.5),new THREE.MeshBasicMaterial({color:0xf3e2cf,transparent:true,opacity:0.45}));
+  g2.rotation.z=2.45; g2.position.z=0.30; glint.add(g2);
+  const spot=new THREE.Mesh(new THREE.SphereGeometry(0.045,12,12),new THREE.MeshBasicMaterial({color:0xf8ece0,transparent:true,opacity:0.9}));
+  spot.position.set(-0.38,0.42,0.32); glint.add(spot);
+}
+scene.add(glint);
+
 window.showPass=function(name){
   frame.visible=(name==='frame'||name==='both');
   iris.visible=(name==='iris'||name==='both');
+  glint.visible=(name==='glint'||name==='both');
   renderer.render(scene,camera);
   return true;
 };
-// page-placement math: iris diameter as a fraction of the square canvas
 window.__irisFraction=(2*(IRIS_R+0.05))/(2*HALF);
 renderer.render(scene,camera);
 window.__renderDone=true;

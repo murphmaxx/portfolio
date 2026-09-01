@@ -24,9 +24,9 @@ No neon, purple, cyan, pills, glows, or playful color fields. Signal orange is r
 
 ## Background
 
-The field is a real render: `site/assets/field-render.jpg`, a seeded deterministic three.js scene (machined graphite terrain, steel survey wireframe, warm signal rake light, survey posts). Generator archived at `motion/render-field-generator.html`; re-render via headless Chromium at 2560×1440. The old CSS mesh/trace/marker field and `motion/field-background.*` are retired.
+The field is a real render v2: `site/assets/field-render.jpg`, a seeded deterministic three.js scene — two ridge systems framing a valley that opens to a warm horizon, elevation-graded wireframe (crests bright steel, floors dark), soft round dust motes with signal embers, survey posts. Generator archived at `motion/render-field-generator.html`; re-render via headless Chromium at 2560×1440. The old CSS mesh/trace/marker field and `motion/field-background.*` are retired.
 
-Above the terrain sits the Eye — a cyber Eye of Ra in the same palette (`motion/render-eye-generator.html`, two passes from one camera): `site/assets/eye-frame.png` holds the lids, dark socket, lash ticks, Ra teardrop + tail strokes, and HUD reticle arcs; `site/assets/eye-iris.png` is the machined turbine iris (64 steel blades, 8 signal spokes, orange pupil rim and outer glow ring) on transparency. The two PNGs overlay at identical size, so they align pixel-perfect.
+Above the terrain sits the Eye v2 — pure 3D, no flourishes (the Ra teardrop, tail strokes, reticle, brow, and lashes are gone). Three passes from one camera (`motion/render-eye-generator.html`): `site/assets/eye-frame.png` (thick machined lid tubes with groove lines, canthus caps with signal dots, concave lathe socket bowl, housing ring), `site/assets/eye-iris.png` (domed 64-blade turbine in a barrel, orange pupil rim, glow ring, graduations), and `site/assets/eye-glint.png` (static specular arcs layered above the moving iris — the reflection stays put while the eye looks around, which is what sells the 3D). All PNGs overlay at identical full size, pixel-aligned.
 
 ## Composition
 
@@ -40,7 +40,8 @@ The hero is tall; its rendered field stays fixed while the document scrolls. Pro
 - Scroll writes only `--shift` (cards) and `--bg-y`/`--bg-scale` (render drift); the tilt handler writes only `--rx/--ry/--px/--py`.
 - The Eye's iris follows the cursor anywhere on the page: direction is the vector from the eye's center to the pointer, deflection saturates ~420px out, travel ≤3.2% of the eye box plus ≤9°/7° swivel, gliding at 0.06/frame (heavier than the cards — it is an eyeball). The frame layer never moves; scroll drifts the whole eye slower than the terrain.
 - Idle life: after ~3.5s without pointer movement the eye saccades to a random nearby point every 2.6–5.2s (runs on touch devices too); the iris rotates once every 4 minutes (CSS `iris-spin`); the whole eye bobs ±7px over 7.5s (CSS `eye-bob` on `.eye-inner`).
-- Blink: a circular two-half shutter (`.lids`, steel-edged, over the socket, above the iris) closes for ~150ms at a random 4–9s cadence, 22% chance of a double-blink. Layer order inside `.eye-inner`: frame img → `.iris-gaze` (cursor transform) → iris img (spin) → `.lids`.
+- Blink: a membrane sweeps canthus to canthus — one steel-edged dark blade wipes across the socket (left corner to right corner, 340ms, `lid-sweep` keyframes) at a random 4–9s cadence, 22% chance of a double-blink. Layer order inside `.eye-inner`: frame img → `.iris-gaze` (cursor transform) → iris img (spin) → glint img (static) → `.lids`.
+- Scroll-follow: the eye comes with you — as the hero scrolls away (progress over the first 1.15 viewport heights) it scales to 0.54 toward its top-right corner (`transform-origin:82% 10%`) and fades to 0.68, then keeps gazing and blinking over the work section.
 - Coarse pointers and reduced motion get no tilt and a centered gaze; reduced motion starts with the motion toggle off.
 
 ## Controls

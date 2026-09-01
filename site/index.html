@@ -73,20 +73,19 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
    reticle) never moves; the iris pass slides and swivels over the dark socket
    toward the cursor. Travel is % of the iris' own box so it scales with the
    layer. */
-.field .eye{position:absolute;top:8vh;right:2vw;width:min(46vw,740px);aspect-ratio:1;perspective:900px;transform:translate3d(0,var(--eye-y,0px),0);opacity:.94}
+.field .eye{position:absolute;top:8vh;right:2vw;width:min(46vw,740px);aspect-ratio:1;perspective:900px;transform:translate3d(0,var(--eye-y,0px),0) scale(var(--eye-scale,1));transform-origin:82% 10%;opacity:var(--eye-fade,.94)}
 .field .eye .eye-inner{position:absolute;inset:0;animation:eye-bob 7.5s ease-in-out infinite alternate}
 .field .eye img{position:absolute;display:block}
 .field .eye .eye-frame{inset:0;width:100%;height:100%}
 .field .eye .iris-gaze{position:absolute;inset:0;transform:translate3d(var(--gx,0%),var(--gy,0%),0) rotateY(var(--gry,0deg)) rotateX(var(--grx,0deg));will-change:transform}
 .field .eye .eye-iris{inset:0;width:100%;height:100%;animation:iris-spin 240s linear infinite}
-/* blink: a circular shutter over the socket — two dark lid halves with steel
-   edges close briefly. Sits above the iris, below nothing (frame lids are
-   thin lines the shutter may briefly cover). */
-.field .eye .lids{position:absolute;left:32%;top:32%;width:36%;height:36%;border-radius:50%;overflow:hidden;pointer-events:none}
-.field .eye .lids i{position:absolute;left:-2%;width:104%;height:54%;background:#0d1013;display:block;transition:transform .15s ease-out}
-.field .eye .lid-top{top:0;transform:translateY(-103%);border-bottom:1px solid #333c44}
-.field .eye .lid-bot{bottom:0;transform:translateY(103%);border-top:1px solid #333c44}
-.field .eye .lids.closed i{transition:transform .09s ease-in;transform:translateY(0)}
+.field .eye .eye-glint{inset:0;width:100%;height:100%;pointer-events:none}
+/* blink: a membrane sweeps canthus to canthus — one dark blade with steel
+   edges wipes across the socket left corner to right corner. */
+.field .eye .lids{position:absolute;left:31%;top:31%;width:38%;height:38%;border-radius:50%;overflow:hidden;pointer-events:none}
+.field .eye .lids i{position:absolute;top:-2%;height:104%;width:112%;left:-2%;background:#0d1013;display:block;transform:translateX(-110%);border-left:1px solid #333c44;border-right:1px solid #46525c}
+.field .eye .lids.sweep i{animation:lid-sweep .34s cubic-bezier(.45,.05,.55,.95)}
+@keyframes lid-sweep{from{transform:translateX(-110%)}to{transform:translateX(110%)}}
 @keyframes eye-bob{to{transform:translateY(7px)}}
 @keyframes iris-spin{to{transform:rotate(360deg)}}
 
@@ -240,7 +239,8 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     <div class="eye-inner">
       <img class="eye-frame" src="assets/eye-frame.png" alt="" decoding="async">
       <div class="iris-gaze"><img class="eye-iris" src="assets/eye-iris.png" alt="" decoding="async"></div>
-      <div class="lids"><i class="lid-top"></i><i class="lid-bot"></i></div>
+      <img class="eye-glint" src="assets/eye-glint.png" alt="" decoding="async">
+      <div class="lids"><i></i></div>
     </div>
   </div>
   <div class="vig"></div>
@@ -355,7 +355,14 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     var p = Math.min(1, scrollY / max);
     field.style.setProperty('--bg-y', (p * 70) + 'px');
     field.style.setProperty('--bg-scale', String(1 + p * 0.05));
-    if (eye) eye.style.setProperty('--eye-y', (p * 34) + 'px');
+    if (eye) {
+      eye.style.setProperty('--eye-y', (p * 34) + 'px');
+      // the eye comes with you: it shrinks toward the top-right corner as
+      // the hero scrolls away, and keeps watching from there
+      var ep = Math.max(0, Math.min(1, scrollY / (innerHeight * 1.15)));
+      eye.style.setProperty('--eye-scale', String(1 - ep * 0.46));
+      eye.style.setProperty('--eye-fade', String(0.94 - ep * 0.26));
+    }
     boxes.forEach(function (box, i) {
       var r = box.getBoundingClientRect();
       var progress = Math.max(0, Math.min(1, (innerHeight - r.top) / (innerHeight + box.offsetHeight)));
@@ -375,7 +382,11 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     if (v) {
       field.style.removeProperty('--bg-y');
       field.style.removeProperty('--bg-scale');
-      if (eye) eye.style.removeProperty('--eye-y');
+      if (eye) {
+        eye.style.removeProperty('--eye-y');
+        eye.style.removeProperty('--eye-scale');
+        eye.style.removeProperty('--eye-fade');
+      }
       boxes.forEach(function (box) { box.style.removeProperty('--shift'); });
       resets.forEach(function (reset) { reset(); });
     } else {
@@ -459,12 +470,12 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       }, 2600 + Math.random() * 2600);
     })();
 
-    /* randomized blink: mechanical shutter, occasionally doubled */
+    /* randomized blink: a membrane sweeps canthus to canthus, occasionally doubled */
     function blink() {
       if (!lidsEl) return;
-      lidsEl.classList.add('closed');
-      setTimeout(function () { lidsEl.classList.remove('closed'); }, 150);
+      lidsEl.classList.add('sweep');
     }
+    if (lidsEl) lidsEl.addEventListener('animationend', function () { lidsEl.classList.remove('sweep'); });
     (function blinkLoop() {
       setTimeout(function () {
         if (!off) { blink(); if (Math.random() < 0.22) setTimeout(blink, 430); }
