@@ -35,6 +35,7 @@ The hero is tall; its rendered field stays fixed while the document scrolls. Pro
 ## Media panes
 - The card's right pane is a DEMO RENDER, never text: a live canvas diagram of the project's real mechanism, in-palette, seeded, scrubbed by scroll, idling gently. Honest diagrams only — no fake screenshots, no invented numbers; every labeled element corresponds to something the project actually does. Replaceable by real captured media without layout change.
 - Text (description + claim readout) lives in the left column. Readout stays at 7 claim rows max.
+- Pane motion grammar (Owen, 2026-09-01): the ouros TUI pane LOOPS on its own clock (GIF grammar — typing, gate, response). Transcript panes (crucible, eyeofrah) are SCROLL-SCRUBBED — a loop was tried for them and reverted same day; do not re-loop them.
 
 ## Motion grammar
 
