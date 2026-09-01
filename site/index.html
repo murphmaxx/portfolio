@@ -74,9 +74,21 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
    toward the cursor. Travel is % of the iris' own box so it scales with the
    layer. */
 .field .eye{position:absolute;top:8vh;right:2vw;width:min(46vw,740px);aspect-ratio:1;perspective:900px;transform:translate3d(0,var(--eye-y,0px),0);opacity:.94}
+.field .eye .eye-inner{position:absolute;inset:0;animation:eye-bob 7.5s ease-in-out infinite alternate}
 .field .eye img{position:absolute;display:block}
 .field .eye .eye-frame{inset:0;width:100%;height:100%}
-.field .eye .eye-iris{inset:0;width:100%;height:100%;transform:translate3d(var(--gx,0%),var(--gy,0%),0) rotateY(var(--gry,0deg)) rotateX(var(--grx,0deg));will-change:transform}
+.field .eye .iris-gaze{position:absolute;inset:0;transform:translate3d(var(--gx,0%),var(--gy,0%),0) rotateY(var(--gry,0deg)) rotateX(var(--grx,0deg));will-change:transform}
+.field .eye .eye-iris{inset:0;width:100%;height:100%;animation:iris-spin 240s linear infinite}
+/* blink: a circular shutter over the socket — two dark lid halves with steel
+   edges close briefly. Sits above the iris, below nothing (frame lids are
+   thin lines the shutter may briefly cover). */
+.field .eye .lids{position:absolute;left:32%;top:32%;width:36%;height:36%;border-radius:50%;overflow:hidden;pointer-events:none}
+.field .eye .lids i{position:absolute;left:-2%;width:104%;height:54%;background:#0d1013;display:block;transition:transform .15s ease-out}
+.field .eye .lid-top{top:0;transform:translateY(-103%);border-bottom:1px solid #333c44}
+.field .eye .lid-bot{bottom:0;transform:translateY(103%);border-top:1px solid #333c44}
+.field .eye .lids.closed i{transition:transform .09s ease-in;transform:translateY(0)}
+@keyframes eye-bob{to{transform:translateY(7px)}}
+@keyframes iris-spin{to{transform:rotate(360deg)}}
 
 .hero{position:relative;z-index:2;min-height:145vh;padding:145px var(--gutter) 0;max-width:1500px;margin:auto}
 .hero-copy{width:min(760px,90vw)}
@@ -203,11 +215,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   .field .render,.media-line i{transition:none!important}
+  .eye .eye-inner,.eye .eye-iris{animation:none!important}
+  .eye .lids i{transition:none!important}
   .scroll-note i{display:none}
 }
 html.motion-off .project-box{transform:translate3d(var(--x,0px),calc(var(--y,0px) + var(--shift,0px)),0)!important}
 html.motion-off .record{transform:none!important}
-html.motion-off .eye .eye-iris{transform:none!important}
+html.motion-off .eye .iris-gaze{transform:none!important}
+html.motion-off .eye .eye-inner,html.motion-off .eye .eye-iris{animation:none!important}
 html.motion-off .project-box .project-info,html.motion-off .project-box .project-data,html.motion-off .project-box .media-field{transform:none!important}
 </style>
 </head>
@@ -222,8 +237,11 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
 <div class="field" aria-hidden="true">
   <img class="render" src="assets/field-render.jpg" alt="" decoding="async">
   <div class="eye">
-    <img class="eye-frame" src="assets/eye-frame.png" alt="" decoding="async">
-    <img class="eye-iris" src="assets/eye-iris.png" alt="" decoding="async">
+    <div class="eye-inner">
+      <img class="eye-frame" src="assets/eye-frame.png" alt="" decoding="async">
+      <div class="iris-gaze"><img class="eye-iris" src="assets/eye-iris.png" alt="" decoding="async"></div>
+      <div class="lids"><i class="lid-top"></i><i class="lid-bot"></i></div>
+    </div>
   </div>
   <div class="vig"></div>
 </div>
@@ -326,7 +344,8 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
   var resets = [];
 
   var eye = document.querySelector('.field .eye');
-  var irisEl = eye ? eye.querySelector('.eye-iris') : null;
+  var gazeEl = eye ? eye.querySelector('.iris-gaze') : null;
+  var lidsEl = eye ? eye.querySelector('.lids') : null;
 
   /* ---- scroll plane: writes only --bg-y/--bg-scale and per-card --shift ---- */
   function scrollUpdate() {
@@ -385,23 +404,25 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
      Both passes share one camera and canvas, so the iris img overlays the
      frame img at full size; travel is a small % of that shared box. */
   (function () {
-    if (!irisEl) return;
+    if (!gazeEl) return;
     var t = { x: 0, y: 0 };   // target, -1..1
     var g = { x: 0, y: 0 };   // current
     var raf = 0;
+    var lastMove = 0;
     var TRAVEL = 3.2;         // % of the shared eye box
     var ROT_Y = 9, ROT_X = 7; // deg
+    var GAZE_GLIDE = 0.06;    // heavier than the cards — it is an eyeball
 
     function write() {
-      irisEl.style.setProperty('--gx', (g.x * TRAVEL).toFixed(2) + '%');
-      irisEl.style.setProperty('--gy', (g.y * TRAVEL).toFixed(2) + '%');
-      irisEl.style.setProperty('--gry', (g.x * ROT_Y).toFixed(2) + 'deg');
-      irisEl.style.setProperty('--grx', (-g.y * ROT_X).toFixed(2) + 'deg');
+      gazeEl.style.setProperty('--gx', (g.x * TRAVEL).toFixed(2) + '%');
+      gazeEl.style.setProperty('--gy', (g.y * TRAVEL).toFixed(2) + '%');
+      gazeEl.style.setProperty('--gry', (g.x * ROT_Y).toFixed(2) + 'deg');
+      gazeEl.style.setProperty('--grx', (-g.y * ROT_X).toFixed(2) + 'deg');
     }
     function follow() {
       raf = 0;
-      g.x += (t.x - g.x) * 0.09;
-      g.y += (t.y - g.y) * 0.09;
+      g.x += (t.x - g.x) * GAZE_GLIDE;
+      g.y += (t.y - g.y) * GAZE_GLIDE;
       write();
       if (Math.abs(t.x - g.x) > 0.002 || Math.abs(t.y - g.y) > 0.002) raf = requestAnimationFrame(follow);
     }
@@ -412,6 +433,7 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     });
     addEventListener('pointermove', function (event) {
       if (off || coarse.matches) return;
+      lastMove = performance.now();
       var r = eye.getBoundingClientRect();
       var dx = event.clientX - (r.left + r.width / 2);
       var dy = event.clientY - (r.top + r.height / 2);
@@ -421,6 +443,34 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       t.y = dist ? (dy / dist) * mag : 0;
       if (!raf) raf = requestAnimationFrame(follow);
     }, { passive: true });
+
+    /* idle wander: after ~3.5s without pointer movement the eye saccades to a
+       random nearby point every few seconds. Runs on touch devices too. */
+    function saccade(mag) {
+      var sign = function () { return Math.random() < 0.5 ? -1 : 1; };
+      t.x = (0.15 + Math.random() * mag) * sign();
+      t.y = (0.10 + Math.random() * mag * 0.7) * sign();
+      if (!raf) raf = requestAnimationFrame(follow);
+    }
+    (function wander() {
+      setTimeout(function () {
+        if (!off && (!lastMove || performance.now() - lastMove > 3500)) saccade(0.4);
+        wander();
+      }, 2600 + Math.random() * 2600);
+    })();
+
+    /* randomized blink: mechanical shutter, occasionally doubled */
+    function blink() {
+      if (!lidsEl) return;
+      lidsEl.classList.add('closed');
+      setTimeout(function () { lidsEl.classList.remove('closed'); }, 150);
+    }
+    (function blinkLoop() {
+      setTimeout(function () {
+        if (!off) { blink(); if (Math.random() < 0.22) setTimeout(blink, 430); }
+        blinkLoop();
+      }, 4000 + Math.random() * 5000);
+    })();
   })();
 
   boxes.forEach(function (box) {

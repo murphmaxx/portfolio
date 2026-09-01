@@ -38,7 +38,9 @@ The hero is tall; its rendered field stays fixed while the document scrolls. Pro
 - Inner planes (`.project-info`, `.project-data`, `.media-field`) drift a few px in 2D against the tilt so the record comes apart in depth. No translateZ on children.
 - Release is a JS elastic tween (~900 ms) back to flat. No CSS transition on transform anywhere in that pipeline.
 - Scroll writes only `--shift` (cards) and `--bg-y`/`--bg-scale` (render drift); the tilt handler writes only `--rx/--ry/--px/--py`.
-- The Eye's iris follows the cursor anywhere on the page: direction is the vector from the eye's center to the pointer, deflection saturates ~420px out, travel ≤3.2% of the eye box plus ≤9°/7° swivel, gliding at 0.09/frame (heavier than the cards — it is an eyeball). The frame layer never moves; scroll drifts the whole eye slower than the terrain.
+- The Eye's iris follows the cursor anywhere on the page: direction is the vector from the eye's center to the pointer, deflection saturates ~420px out, travel ≤3.2% of the eye box plus ≤9°/7° swivel, gliding at 0.06/frame (heavier than the cards — it is an eyeball). The frame layer never moves; scroll drifts the whole eye slower than the terrain.
+- Idle life: after ~3.5s without pointer movement the eye saccades to a random nearby point every 2.6–5.2s (runs on touch devices too); the iris rotates once every 4 minutes (CSS `iris-spin`); the whole eye bobs ±7px over 7.5s (CSS `eye-bob` on `.eye-inner`).
+- Blink: a circular two-half shutter (`.lids`, steel-edged, over the socket, above the iris) closes for ~150ms at a random 4–9s cadence, 22% chance of a double-blink. Layer order inside `.eye-inner`: frame img → `.iris-gaze` (cursor transform) → iris img (spin) → `.lids`.
 - Coarse pointers and reduced motion get no tilt and a centered gaze; reduced motion starts with the motion toggle off.
 
 ## Controls
