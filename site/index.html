@@ -170,8 +170,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
 
 .media-field{grid-column:3;grid-row:1/3;min-height:335px;position:relative;border:1px solid var(--line);background:#0d1115cc;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
 .media-field:before{content:'';position:absolute;inset:0;background:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:34px 34px}
-.readout{position:relative;margin:0;padding:16px 22px 40px}
-.readout>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 14px;align-items:baseline;padding:7px 2px;border-bottom:1px solid #ffffff0d;font:10px 'DM Mono';letter-spacing:.05em;text-transform:uppercase}
+.readout{position:relative;margin:0;padding:20px 22px 40px}
+.readout>div{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 14px;align-items:baseline;padding:9px 2px;border-bottom:1px solid #ffffff0d;font:10px 'DM Mono';letter-spacing:.05em;text-transform:uppercase}
 .readout dt{color:var(--muted);margin:0}
 .readout dd{color:var(--white);margin:0;text-align:right}
 .readout .hot dd{color:var(--signal-2)}
@@ -295,18 +295,15 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     <div class="project-info"><h3>Ouros</h3><p>A governed execution runtime for AI agents. Every consequential action passes a policy gate, and the decision is written to a tamper-evident audit record before the action takes effect — no record, no effect.</p></div>
     <div class="project-data">Boundary<b>Gate / policy / audit</b>Evidence<b>Private — demo on request</b><a class="action" href="mailto:omurphy@ourosproject.com?subject=Ouros%20demo"><span>Request demo</span><span class="action-icon"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M9 5h10v10"/></svg></span></a></div>
     <div class="media-field"><dl class="readout">
-        <div><dt>Runtime</dt><dd>Rust — 105,540 lines</dd></div>
-        <div><dt>Tests</dt><dd>1,424 functions</dd></div>
-        <div><dt>Workspace</dt><dd>4 crates — runtime · proxy · infer · macros</dd></div>
-        <div><dt>Decision point</dt><dd>one PDP, every path</dd></div>
-        <div><dt>Policy</dt><dd>Cedar engine</dd></div>
-        <div><dt>Audit</dt><dd>Merkle chain, record-before-effect</dd></div>
-        <div><dt>Egress</dt><dd>no record, no egress</dd></div>
-        <div><dt>Class-A sites</dt><dd>23 — regression-pinned</dd></div>
-        <div><dt>Delegation</dt><dd>built in</dd></div>
-        <div><dt>Export</dt><dd>AIVS audit format</dd></div>
-        <div><dt>Docs</dt><dd>architecture + threat model</dd></div>
-        <div class="hot"><dt>Red team</dt><dd>external — findings closed</dd></div>
+        <div><dt>Rule</dt><dd>no audit record, no effect</dd></div>
+        <div><dt>Every action</dt><dd>one policy decision point</dd></div>
+        <div><dt>Bypass routes</dt><dd>23 found — closed, regression-pinned</dd></div>
+        <div><dt>Policy</dt><dd>Cedar — declarative, auditable</dd></div>
+        <div><dt>Audit log</dt><dd>Merkle chain, tamper-evident</dd></div>
+        <div><dt>Signatures</dt><dd>post-quantum</dd></div>
+        <div class="hot"><dt>Adversarial</dt><dd>external red team — findings closed</dd></div>
+        <div><dt>Scale</dt><dd>Rust — 105,540 lines</dd></div>
+        <div><dt>Proof</dt><dd>1,424 test functions</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
@@ -317,17 +314,14 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     <div class="project-info"><h3>Canopy</h3><p>The control panel for agent execution: one instrument through which operator and agents hold the same picture of all work in flight — and the code tells the truth about itself, even when that is unflattering.</p></div>
     <div class="project-data">Boundary<b>Operator / fleet sessions</b>Evidence<b>Private — demo on request</b><a class="action" href="mailto:omurphy@ourosproject.com?subject=Canopy%20demo"><span>Request demo</span><span class="action-icon"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M9 5h10v10"/></svg></span></a></div>
     <div class="media-field"><dl class="readout">
-        <div><dt>Core</dt><dd>Rust — 40,503 lines</dd></div>
-        <div><dt>Interface</dt><dd>TypeScript — 21,010 lines</dd></div>
-        <div><dt>Tests</dt><dd>722 functions</dd></div>
-        <div><dt>Commits</dt><dd>391</dd></div>
-        <div><dt>Crates</dt><dd>forest · ledger · recall · viz · proto · conversation</dd></div>
-        <div><dt>Daemon</dt><dd>canopyd — background service</dd></div>
-        <div><dt>Scanner</dt><dd>canopy-viz — repo → topology</dd></div>
-        <div><dt>App</dt><dd>glass</dd></div>
-        <div><dt>Ships as</dt><dd>installed macOS app</dd></div>
-        <div><dt>Specs</dt><dd>vision + design, in-repo</dd></div>
-        <div class="hot"><dt>Truth source</dt><dd>the code itself</dd></div>
+        <div><dt>Job</dt><dd>every agent session, one picture</dd></div>
+        <div><dt>Sees</dt><dd>repo scanned into a live topology</dd></div>
+        <div><dt>Keeps</dt><dd>a session ledger, recallable</dd></div>
+        <div><dt>Runs as</dt><dd>installed app + resident daemon</dd></div>
+        <div class="hot"><dt>Claim</dt><dd>the code reports itself — unflattering included</dd></div>
+        <div><dt>Scale</dt><dd>Rust 40,503 + TypeScript 21,010 lines</dd></div>
+        <div><dt>Proof</dt><dd>722 tests · 391 commits</dd></div>
+        <div><dt>Newest commit</dt><dd>2026-08-31</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
@@ -338,17 +332,14 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     <div class="project-info"><h3>Grounded</h3><p>An offline question-answering appliance for document-heavy work. It runs on a machine inside the business, answers only from a fixed corpus, and attaches a citation to every claim so the answer can be checked against its source.</p></div>
     <div class="project-data">Boundary<b>Documents / inference</b>Evidence<b>Public repository</b><a class="action" href="https://github.com/murphmaxx/grounded" target="_blank" rel="noopener"><span>Repository</span><span class="action-icon"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M9 5h10v10"/></svg></span></a></div>
     <div class="media-field"><dl class="readout">
-        <div><dt>Stack</dt><dd>Node + Ollama, local</dd></div>
-        <div><dt>Engine</dt><dd>2,245 lines</dd></div>
-        <div><dt>Modules</dt><dd>10 — corpus · search · engine · governance …</dd></div>
-        <div class="hot"><dt>Citations</dt><dd>one per claim</dd></div>
-        <div><dt>Network</dt><dd>no egress</dd></div>
-        <div><dt>Corpus</dt><dd>fixed, authoritative</dd></div>
-        <div><dt>Answer audit</dt><dd>every answer logged</dd></div>
-        <div><dt>Governance</dt><dd>gate module + tests</dd></div>
-        <div><dt>Test files</dt><dd>audit · governance · support</dd></div>
-        <div><dt>Harness</dt><dd>canned-response, model-free</dd></div>
-        <div><dt>Deployment</dt><dd>one box, inside the business</dd></div>
+        <div><dt>Runs</dt><dd>on one box, inside the business</dd></div>
+        <div><dt>Network</dt><dd>zero egress — nothing leaves</dd></div>
+        <div><dt>Answers</dt><dd>only from the fixed corpus</dd></div>
+        <div class="hot"><dt>Every claim</dt><dd>carries its citation</dd></div>
+        <div><dt>Every answer</dt><dd>logged for audit</dd></div>
+        <div><dt>Refusals</dt><dd>a governance gate, tested</dd></div>
+        <div><dt>CI</dt><dd>runs without a model — canned harness</dd></div>
+        <div><dt>Scale</dt><dd>2,245 lines Node · Ollama local</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
@@ -359,16 +350,13 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     <div class="project-info"><h3>Eyeofrah</h3><p>A GPT-2 inference engine in Rust that exposes the model’s intermediate activations as a readable, writable surface. Attention, MLP, LayerNorm and the residual path are owned directly, so any value can be traced, decoded, or modified.</p></div>
     <div class="project-data">Boundary<b>GPT-2 / activations</b>Evidence<b>Public repository</b><a class="action" href="https://github.com/murphmaxx/eyeofrah" target="_blank" rel="noopener"><span>Repository</span><span class="action-icon"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M9 5h10v10"/></svg></span></a></div>
     <div class="media-field"><dl class="readout">
-        <div><dt>Model</dt><dd>GPT-2-small — 124M</dd></div>
-        <div><dt>Forward pass</dt><dd>hand-rolled, 1,070 lines</dd></div>
-        <div><dt>Owned ops</dt><dd>attention · MLP · LN · residual</dd></div>
-        <div><dt>Tensors</dt><dd>candle — matmul only</dd></div>
-        <div><dt>Modules</dt><dd>model · trace · calib · config</dd></div>
-        <div class="hot"><dt>Surface</dt><dd>trace · decode · modify</dd></div>
-        <div><dt>Precision</dt><dd>F32 attention, always</dd></div>
-        <div><dt>Calibration</dt><dd>1,000-prompt set</dd></div>
-        <div><dt>Tooling</dt><dd>prompt generator, Python</dd></div>
-        <div><dt>Purpose</dt><dd>internals readable + writable</dd></div>
+        <div><dt>Subject</dt><dd>GPT-2-small — 124M parameters</dd></div>
+        <div><dt>Forward pass</dt><dd>written by hand — 1,070 lines</dd></div>
+        <div><dt>Borrowed</dt><dd>only matmul, from candle</dd></div>
+        <div><dt>Owned</dt><dd>attention · MLP · LayerNorm · residual</dd></div>
+        <div class="hot"><dt>Read + write</dt><dd>any intermediate value</dd></div>
+        <div><dt>Numerics</dt><dd>attention held at F32, always</dd></div>
+        <div><dt>Calibration</dt><dd>a 1,000-prompt suite</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
@@ -379,17 +367,14 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     <div class="project-info"><h3>Crucible</h3><p>A deterministic simplicity engine for Rust. It measures how complex code actually is, ranks every function against the rest of its own codebase, and refuses to report anything it cannot back with a number and a source span.</p></div>
     <div class="project-data">Boundary<b>Rust / complexity</b>Evidence<b>Public repository</b><a class="action" href="https://github.com/murphmaxx/crucible" target="_blank" rel="noopener"><span>Repository</span><span class="action-icon"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M9 5h10v10"/></svg></span></a></div>
     <div class="media-field"><dl class="readout">
-        <div><dt>Engine</dt><dd>deterministic, zero-model</dd></div>
-        <div><dt>Size</dt><dd>1,126 lines</dd></div>
-        <div><dt>Tests</dt><dd>26</dd></div>
-        <div><dt>Dependencies</dt><dd>3 — syn · proc-macro2 · walkdir</dd></div>
-        <div><dt>Parsing</dt><dd>full syn AST</dd></div>
-        <div><dt>Spans</dt><dd>proc-macro2 source locations</dd></div>
-        <div><dt>Modules</dt><dd>model · parse · report · rollup · primitives</dd></div>
-        <div><dt>Ranking</dt><dd>per-function, in-codebase</dd></div>
-        <div class="hot"><dt>Claims</dt><dd>number + span, or nothing</dd></div>
-        <div><dt>License</dt><dd>MIT</dd></div>
-        <div><dt>CI</dt><dd>GitHub Actions</dd></div>
+        <div><dt>Verdicts</dt><dd>deterministic — same code, same answer</dd></div>
+        <div><dt>Model</dt><dd>none — pure static analysis</dd></div>
+        <div class="hot"><dt>Every claim</dt><dd>a number + a source span, or nothing</dd></div>
+        <div><dt>Ranking</dt><dd>against your own codebase, no universal scale</dd></div>
+        <div><dt>Trust surface</dt><dd>3 dependencies, total</dd></div>
+        <div><dt>Parsing</dt><dd>the full Rust AST</dd></div>
+        <div><dt>Scale</dt><dd>1,126 lines · 26 tests</dd></div>
+        <div><dt>License</dt><dd>MIT, public</dd></div>
       </dl><span class="readout-tag">Surveyed 2026-08-31</span></div>
     </div>
   </div>
@@ -400,16 +385,14 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
     <div class="project-info"><h3>The Cost of Asking.</h3><p>Working paper on the operational economics of human judgment in autonomous missions: five cost terms, a threshold past which more governance degrades decisions, and the conclusion that governance must move from runtime to design time.</p></div>
     <div class="project-data">Boundary<b>Model / five cost terms</b>Evidence<b>Draft — copy on request</b><a class="action" href="mailto:omurphy@ourosproject.com?subject=The%20Cost%20of%20Asking%20draft"><span>Request draft</span><span class="action-icon"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M9 5h10v10"/></svg></span></a></div>
     <div class="media-field"><dl class="readout">
-        <div><dt>Question</dt><dd>what does asking cost?</dd></div>
-        <div><dt>Model</dt><dd>five operational terms</dd></div>
-        <div><dt>Terms</dt><dd>latency · emission · span · compression · opportunity</dd></div>
-        <div><dt>Regime</dt><dd>decisions ~10⁶ rarer than syscalls</dd></div>
-        <div><dt>Prior art</dt><dd>priced syscalls at ns budgets</dd></div>
-        <div><dt>Finding</dt><dd>span-of-control enters twice</dd></div>
-        <div><dt>Signs</dt><dd>raises effort, raises tolerance</dd></div>
-        <div><dt>Threshold</dt><dd>past utilization, quality degrades</dd></div>
-        <div class="hot"><dt>Conclusion</dt><dd>runtime → design time</dd></div>
-        <div><dt>Home</dt><dd>measured on the ouros runtime</dd></div>
+        <div><dt>Asks</dt><dd>the real price of human approval</dd></div>
+        <div><dt>Costed in</dt><dd>latency · emission · span · compression · opportunity</dd></div>
+        <div><dt>Key fact</dt><dd>governed decisions ~10⁶ rarer than syscalls</dd></div>
+        <div><dt>Which means</dt><dd>non-repudiation is nearly free here</dd></div>
+        <div><dt>Twist</dt><dd>oversight raises effort AND tolerance</dd></div>
+        <div><dt>Limit</dt><dd>past a threshold, approval degrades decisions</dd></div>
+        <div class="hot"><dt>Verdict</dt><dd>governance belongs at design time</dd></div>
+        <div><dt>Grounding</dt><dd>the ouros runtime</dd></div>
         <div><dt>Status</dt><dd>working draft</dd></div>
       </dl><span class="readout-tag">Draft — 2026-08</span></div>
     </div>
