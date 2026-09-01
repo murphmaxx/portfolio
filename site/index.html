@@ -225,6 +225,19 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
   .closing .action{justify-self:start}
 }
 @media(max-width:620px){
+  .record{grid-template-columns:1fr;gap:14px;padding:18px;min-height:0}
+  .project-no{writing-mode:horizontal-tb;transform:none;letter-spacing:.12em;order:0}
+  .project-info{order:1}
+  .media-field{grid-column:1;grid-row:auto;min-height:250px;order:2}
+  .project-data{grid-column:1;grid-row:auto;order:3}
+  #rec-1 .media-field{min-height:430px}
+  .project-info .readout{max-width:100%}
+  .readout>div{display:block;padding:7px 2px}
+  .readout dt{margin-bottom:2px}
+  .readout dd{text-align:left}
+  .footer{flex-direction:column;align-items:flex-start;gap:9px;padding-right:120px}
+  .closing p.closing-id{font-size:10px}
+  .motion-control{min-height:34px;padding:0 9px;font-size:9px;right:10px;bottom:10px}
   .masthead{height:60px}
   .nav a:not(:first-child){display:none}
   .mark{font-size:18px}
@@ -239,9 +252,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-off
   .project-box{min-height:500px;margin-bottom:18vh}
   .project-info h3{font-size:59px}
   .project-info p{font-size:13px}
-  .media-field{min-height:220px}
+  .media-field{min-height:260px}
   .closing h2{font-size:80px}
-  .footer{display:block;line-height:2}
 }
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -1430,29 +1442,38 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
   /* full-screen TUI replay, GIF-style LOOP: live typing -> model working ->
      gate modal -> approval -> the response streaming in -> hold -> repeat.
      Frames are real pyte captures of a real session; typing and streaming
-     pacing are synthesized inside them. Time-driven (unlike the transcript
-     panes); motion-off freezes on the gate — the pane's thesis. */
+     pacing are synthesized inside them. On panes too narrow for a legible
+     full-width fit, a crop-and-pan camera takes over: 8px glyphs, the gate
+     beat centers the modal, the stream beat pans across the terminal.
+     Motion-off freezes on the gate — the pane's thesis. */
   function tuiDraw(cap) {
     var M = cap.meta, idxOf = {};
     cap.frames.forEach(function (f, i) { idxOf[f.name] = i; });
-    var cache = {};
+    var cache = {}, pan = 0;
     function metrics(w, h) {
+      var availH = h - 26;                       /* bottom band for the tag */
       var chW = (w - 24) / cap.cols;
       var FS = Math.min(12, Math.floor(chW / 0.58));
-      var LH = Math.min(Math.floor((h - 20) / cap.rows), Math.round(FS * 1.5));
-      return { chW: chW, FS: FS, LH: LH, y0: Math.max(10, (h - cap.rows * LH) / 2) };
+      var crop = FS < 7;
+      if (crop) { FS = 8; chW = FS * 0.62; }
+      var LH = crop ? Math.round(FS * 1.45)
+                    : Math.min(Math.floor((availH - 20) / cap.rows), Math.round(FS * 1.5));
+      return {
+        chW: chW, FS: FS, LH: LH, crop: crop,
+        gridW: crop ? Math.ceil(cap.cols * chW + 24) : w,
+        y0: Math.max(10, (availH - cap.rows * LH) / 2),
+      };
     }
     function renderFrame(name, w, h) {
-      var idx = idxOf[name];
-      var key = idx + ':' + w + 'x' + h;
+      var g = metrics(w, h), idx = idxOf[name];
+      var key = idx + ':' + g.gridW + 'x' + h;
       if (cache[key]) return cache[key];
       var off2 = document.createElement('canvas');
       var dpr = Math.min(2, devicePixelRatio || 1);
-      off2.width = Math.round(w * dpr); off2.height = Math.round(h * dpr);
+      off2.width = Math.round(g.gridW * dpr); off2.height = Math.round(h * dpr);
       var x = off2.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0);
-      x.fillStyle = BG; x.fillRect(0, 0, w, h);
-      var g = metrics(w, h);
-      x.font = g.FS + 'px "DM Mono", monospace';
+      x.fillStyle = BG; x.fillRect(0, 0, g.gridW, h);
+      x.font = g.FS + 'px "DM Mono", monospace'; x.textBaseline = 'alphabetic';
       cap.frames[idx].rows.forEach(function (runs, ry) {
         var cx = 0;
         runs.forEach(function (run) {
@@ -1471,52 +1492,64 @@ html.motion-off .project-box .project-info,html.motion-off .project-box .project
       cache[key] = off2;
       return off2;
     }
-    /* the loop: [stage, seconds] */
     var STAGES = [['type', 3.2], ['work', 2.4], ['gate', 3.4], ['approved', 1.3], ['stream', 3.0], ['hold', 2.4]];
     var TOTAL = STAGES.reduce(function (a2, s2) { return a2 + s2[1]; }, 0);
-    function cell(x, g, row, col, txt, color) {
+    function cell(x, g, row, col, txt, color, panPx) {
       x.fillStyle = BG;
-      x.fillRect(12 + col * g.chW, g.y0 + row * g.LH + 1, (cap.cols - col - 1) * g.chW, g.LH - 1);
+      x.fillRect(12 + col * g.chW - panPx, g.y0 + row * g.LH + 1, (cap.cols - col - 1) * g.chW, g.LH - 1);
       x.font = g.FS + 'px "DM Mono", monospace';
       x.fillStyle = color;
       for (var i = 0; i < txt.length; i++) {
-        if (txt[i] !== ' ') x.fillText(txt[i], 12 + (col + i) * g.chW, g.y0 + row * g.LH + g.FS);
+        if (txt[i] !== ' ') x.fillText(txt[i], 12 + (col + i) * g.chW - panPx, g.y0 + row * g.LH + g.FS);
       }
+    }
+    function blit(x, img, g, w, h, panPx) {
+      var dpr = Math.min(2, devicePixelRatio || 1);
+      x.drawImage(img, Math.round(panPx * dpr), 0, Math.round(w * dpr), Math.round(h * dpr), 0, 0, w, h);
     }
     return function (x, w, h, pp, tt) {
       frame(x, w, h);
       var g = metrics(w, h);
-      if (off) { x.drawImage(renderFrame('gate', w, h), 0, 0, w, h); return; }
+      var maxPan = Math.max(0, g.gridW - w);
+      if (off) { pan = g.crop ? Math.min(maxPan, 15 * g.chW) : 0;
+                 blit(x, renderFrame('gate', w, h), g, w, h, pan); return; }
       var t2 = tt % TOTAL, st = 0, acc = 0;
       while (st < STAGES.length - 1 && t2 >= acc + STAGES[st][1]) { acc += STAGES[st][1]; st++; }
       var ph = (t2 - acc) / STAGES[st][1], name = STAGES[st][0];
+      var target = 0;
+      if (g.crop) {
+        if (name === 'gate') target = Math.min(maxPan, 15 * g.chW); /* modal left-anchored: narrow panes can't hold all 66 cols */
+        else if (name === 'stream') target = ph * maxPan;
+        else if (name === 'hold') target = maxPan * 0.5;
+      }
+      pan += (target - pan) * 0.07;
       if (name === 'type') {
-        x.drawImage(renderFrame('boot', w, h), 0, 0, w, h);
+        blit(x, renderFrame('boot', w, h), g, w, h, pan);
         var n = Math.floor(Math.min(1, ph * 1.12) * M.prompt.length);
-        cell(x, g, M.inputRow, M.inputCol, M.prompt.slice(0, n), '#f0f3f6');
+        cell(x, g, M.inputRow, M.inputCol, M.prompt.slice(0, n), '#f0f3f6', pan);
         if (Math.floor(tt * 2.2) % 2 === 0) {
           x.fillStyle = '#cf9b3a';
-          x.fillRect(12 + (M.inputCol + n) * g.chW + 1, g.y0 + M.inputRow * g.LH + 3, g.chW * 0.7, g.FS);
+          x.fillRect(12 + (M.inputCol + n) * g.chW + 1 - pan, g.y0 + M.inputRow * g.LH + 3, g.chW * 0.7, g.FS);
         }
       } else if (name === 'work') {
-        x.drawImage(renderFrame('typed', w, h), 0, 0, w, h);
+        blit(x, renderFrame('typed', w, h), g, w, h, pan);
         var dots = ['', '.', '..', '…'][Math.floor(tt * 2.8) % 4];
-        cell(x, g, M.workRow, M.workCol, 'working' + dots, '#cf9b3a');
+        cell(x, g, M.workRow, M.workCol, 'working' + dots, '#cf9b3a', pan);
       } else if (name === 'gate') {
-        x.drawImage(renderFrame('gate', w, h), 0, 0, w, h);
+        blit(x, renderFrame('gate', w, h), g, w, h, pan);
       } else if (name === 'approved') {
-        x.drawImage(renderFrame('approved', w, h), 0, 0, w, h);
+        blit(x, renderFrame('approved', w, h), g, w, h, pan);
       } else if (name === 'stream') {
-        x.drawImage(renderFrame('approved', w, h), 0, 0, w, h);
+        blit(x, renderFrame('approved', w, h), g, w, h, pan);
         var span = M.diffEnd - M.diffStart;
         var rows2 = Math.ceil(Math.min(1, ph * 1.08) * span);
         x.save(); x.beginPath();
         x.rect(0, g.y0 + M.diffStart * g.LH, w, rows2 * g.LH);
         x.clip();
-        x.drawImage(renderFrame(idxOf.streaming !== undefined && ph < 0.55 ? 'streaming' : 'final', w, h), 0, 0, w, h);
+        blit(x, renderFrame('final', w, h), g, w, h, pan);
         x.restore();
       } else {
-        x.drawImage(renderFrame('final', w, h), 0, 0, w, h);
+        blit(x, renderFrame('final', w, h), g, w, h, pan);
       }
     };
   }
