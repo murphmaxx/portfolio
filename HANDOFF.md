@@ -28,9 +28,11 @@ Updated 2026-08-31. Supersedes the previous handoff (the tilt bug, the retired C
 
 ## Preview
 
+`site/` is the published root now, so preview it the way Pages serves it:
+
 ```
-python3 -m http.server 4174 --bind 127.0.0.1 --directory /Users/murph/Developer/portfolio
-http://127.0.0.1:4174/site/index.html
+python3 -m http.server 4174 --bind 127.0.0.1 --directory /Users/murph/Developer/portfolio/site
+http://127.0.0.1:4174/
 ```
 
 Kill stale servers on 4174 first (`lsof -nP -i :4174`) — a hung old instance returning empty responses has burned sessions before.
@@ -38,7 +40,7 @@ Kill stale servers on 4174 first (`lsof -nP -i :4174`) — a hung old instance r
 ## Repository
 
 - Local: `/Users/murph/Developer/portfolio` · Remote: `https://github.com/murphmaxx/portfolio` · Branch: `main`
-- GitHub Pages intentionally not enabled yet.
+- GitHub Pages is live. See the 2026-09-02 entry for the publish root.
 - Chrome (stable) is not installed on this machine; use the puppeteer-cached Chrome for Testing at `~/.cache/puppeteer/chrome/` for any browser QA.
 
 ## Open items
@@ -62,6 +64,12 @@ Kill stale servers on 4174 first (`lsof -nP -i :4174`) — a hung old instance r
 - 2026-09-01 LIVE: pushed + GitHub Pages enabled on main — https://murphmaxx.github.io/portfolio/ (root index.html redirects into site/; .nojekyll; og:image URL matches the domain). Build verified: root/site/og-image all 200, live browser smoke boots the scene clean.
 - 2026-09-01 MOBILE SIMPLIFIED (user direction, supersedes the responsive-cards pass for ≤700px): mobile is DELIBERATELY just the hero and the contact plane — `.project-stage`, `.nav`, `.hero-action`, `.motion-control`, `.scroll-note`, `.hero-meta` all display:none ≤700px; a `.mobile-note` line in the closing points to the desktop records ("Six project records — a live governed session, real transcripts, a real self-scan — run on the desktop site."). Harness check 'mobile: hero + contact only' pins it (36 checks). The ≤620 card-stacking + TUI crop-and-pan CSS below is now DORMANT on phones (cards hidden) but kept — it governs 620-700px landscape edge cases and would return if cards ever come back to mobile.
 - 2026-09-01 MOBILE PASS (≤620px, now dormant — see above): single-column cards (project-no horizontal, order title→description→readout→pane→data via grid `order`), readout rows STACK label-over-value left-aligned (the right-aligned wraps were clipping at the card edge), footer stacks (killed a stale `.footer{display:block}` later in the same media block that made the spans run together — check the WHOLE media block when adding responsive rules), motion button compact. TUI pane: CROP-AND-PAN camera when full-width fit would be <7px glyphs — 8px fixed, gate beat left-anchors the modal at col 15 (narrow panes can't hold all 66 modal cols; centering overflowed), stream beat pans across the terminal, `#rec-1 .media-field{min-height:430px}` fits the 30-row grid vertically. Bottom 26px reserved in TUI metrics so the pane tag never collides. Desktop unchanged (crop only engages when needed); 35/35 harness green.
+
+- 2026-09-02 VOICE PASS + CLEAN URL (Owen: "remove the emdashes from the content, map more to my writing style", "fix the link, its displaying as an index.html page"):
+  - **Every em-dash is gone from shipped copy.** 31 replacements: meta/title/og, hero intro, stage sub, all six card descriptions (rewritten, not just de-dashed), 10 readout values, 3 evidence lines, 6 pane tags, the mobile note, the footer link, and 3 canvas-drawn labels. The 31 that remain are all source comments or REAL captured output inside `__tuicap` / `__transcripts` (ouros' own banner "…press Enter — every tool action…", crucible's "P3 size (statements — the baseline)"). Those are evidence: do NOT edit them to satisfy the rule. To lose them, fix the string in ouros/crucible and re-capture. Voice rule is now in DESIGN.md's content boundary.
+  - Copy rewrite kept every verified claim intact and changed no numbers. Card heights unchanged (683/683/683/705/683/785, exactly the pre-pass band), so no tilt geometry moved.
+  - **Publish root moved to `site/`.** The URL was `…/portfolio/site/index.html` because Pages was on legacy branch-root serving and the repo root held a meta-refresh redirect. Now: `.github/workflows/pages.yml` uploads `path: site`, root `index.html` deleted, `.nojekyll` moved into `site/`, og:image absolute URL dropped its `/site` segment. REQUIRES the repo Pages source to be GitHub Actions (`build_type: workflow`) instead of legacy branch — flip it or the legacy branch build keeps winning. Side effect: `designs/`, `docs/`, `motion/` and the handoff notes stop being served at the portfolio URL (still in the repo). Old deep link `/portfolio/site/index.html` 404s; nothing on the site pointed at it.
+  - Verified 2026-09-02, headless Chromium 152 via puppeteer-core, serving `site/` as root: 21/21 (loads, zero em-dash in rendered DOM at desktop AND 390px, all 8 new copy strings present, no horizontal overflow either width, 6 cards, no clipped description, 7 readout rows each, heights in band, scene boots, all six panes draw, no console errors) + screenshots of hero, all six cards, closing, mobile. Harness at the session job dir `verify.mjs`. Note: under swiftshader the frame-time watchdog correctly degrades the scene to 'Field / static' partway through a long run — that is the designed self-protection, not a regression.
 
 ## Git discipline
 
